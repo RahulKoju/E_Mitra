@@ -1,8 +1,9 @@
+import Slider from "./_components/Slider";
 
 export default function Home() {
   return (
-    <div>
-      Home page
+    <div className="max-w-screen-2xl mx-auto md:p-10 px-16 p-5 md:overflow-hidden">
+      <Slider />
     </div>
   );
 }

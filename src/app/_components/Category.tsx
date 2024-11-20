@@ -23,7 +23,6 @@ function Category() {
   }, []);
   const getCategoryList = () => {
     GlobalAPI.getCategory().then((res) => {
-      console.log(res.data.data);
       setCategory(res.data.data);
     });
   };
