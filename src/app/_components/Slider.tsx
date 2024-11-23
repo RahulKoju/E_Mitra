@@ -1,5 +1,3 @@
-import React from "react";
-import GlobalAPI from "../_utils/GlobalAPI";
 import {
   Carousel,
   CarouselContent,
@@ -15,8 +13,11 @@ type SliderItem = {
   }>;
 };
 
-async function Slider() {
-  const sliderList: SliderItem[] = await GlobalAPI.getSlider();
+type SliderProps = {
+  sliderList: SliderItem[];
+};
+
+async function Slider({ sliderList }: SliderProps) {
   return (
     <>
       <Carousel>
