@@ -1,5 +1,12 @@
-import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import Image from "next/image";
+import ProductItemDetail from "./ProductItemDetail";
 
 type Product = {
   id: number;
@@ -56,14 +63,28 @@ function ProductItem({ products }: ProductItemProps) {
               <span className="text-green-600 font-bold text-lg">
                 Rs. {product.price.toLocaleString()}
               </span>
-              <button
-                className="bg-green-500 text-white px-4 py-2 rounded-lg 
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg 
                            hover:bg-green-600 active:bg-green-700 
                            transform active:scale-95 transition-all duration-200
                            shadow-md hover:shadow-lg"
-              >
-                Add to Cart
-              </button>
+                  >
+                    Add to Cart
+                  </button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="sr-only">
+                      {product.name}
+                    </DialogTitle>
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                      <ProductItemDetail product={product} />
+                    </div>
+                  </DialogHeader>
+                </DialogContent>
+              </Dialog>
             </div>
             {product.categories?.length > 0 && (
               <div className="mt-3 flex gap-2 flex-wrap">
