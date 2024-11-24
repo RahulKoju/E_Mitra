@@ -36,11 +36,11 @@ function Category() {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {category.map((category, index) => (
-            <DropdownMenuItem key={index}>
-              <Link href={`/category/${category.slug}`}>
+            <Link href={`/category/${category.slug}`} key={index}>
+              <DropdownMenuItem>
                 <h2>{category.name}</h2>
-              </Link>
-            </DropdownMenuItem>
+              </DropdownMenuItem>
+            </Link>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
