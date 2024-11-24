@@ -1,6 +1,7 @@
 "use client";
 import { Minus, Plus } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useState } from "react";
 
 type Product = {
@@ -110,14 +111,15 @@ function ProductItemDetail({ product }: ProductItemProps) {
               <h2 className="text-sm font-medium text-gray-700">Categories</h2>
               <div className="flex gap-2 flex-wrap">
                 {product.categories.map((category) => (
-                  <span
+                  <Link
+                    href={`/category/${category.slug}`}
                     key={category.id}
                     className="px-3 py-1 text-sm font-medium text-green-700 bg-green-50 rounded-full 
                              border border-green-100 hover:bg-green-100 transition-colors duration-200 
                              cursor-pointer"
                   >
                     {category.name}
-                  </span>
+                  </Link>
                 ))}
               </div>
             </div>

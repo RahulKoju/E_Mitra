@@ -37,7 +37,7 @@ function Category() {
         <DropdownMenuContent>
           {category.map((category, index) => (
             <DropdownMenuItem key={index}>
-              <Link href={`/category/${category.id}`}>
+              <Link href={`/category/${category.slug}`}>
                 <h2>{category.name}</h2>
               </Link>
             </DropdownMenuItem>

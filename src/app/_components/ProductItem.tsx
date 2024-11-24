@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import ProductItemDetail from "./ProductItemDetail";
+import Link from "next/link";
 
 type Product = {
   id: number;
@@ -89,14 +90,15 @@ function ProductItem({ products }: ProductItemProps) {
             {product.categories?.length > 0 && (
               <div className="mt-3 flex gap-2 flex-wrap">
                 {product.categories.map((category) => (
-                  <span
+                  <Link
+                    href={`/category/${category.slug}`}
                     key={category.id}
                     className="text-xs bg-green-50 text-green-700 px-3 py-1 
                          rounded-full border border-green-100
                          hover:bg-green-100 transition-colors duration-200 cursor-pointer"
                   >
                     {category.name}
-                  </span>
+                  </Link>
                 ))}
               </div>
             )}
