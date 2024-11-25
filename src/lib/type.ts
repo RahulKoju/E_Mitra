@@ -10,4 +10,10 @@ export const signUpSchema = z.object({
     path:["confirmPassword"],
 });
 
+export const signInSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(4,"Password must be at least 4 characters."),
+});
+
 export type TSignUpSchema = z.infer<typeof signUpSchema>
+export type TSignInSchema = z.infer<typeof signInSchema>

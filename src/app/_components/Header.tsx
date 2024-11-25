@@ -28,7 +28,9 @@ function Header() {
               </span>
             </div>
           </h2>
-          <Button>Login</Button>
+          <Link href={"/sign-in"}>
+            <Button>Login</Button>
+          </Link>
         </div>
       </div>
     </div>

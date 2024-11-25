@@ -90,6 +90,7 @@ function SignUp() {
                 className="pl-10 w-full"
                 placeholder="Password"
                 type="password"
+                autoComplete="cc-number"
                 {...register("password")}
               />
               {errors.password && (
@@ -105,6 +106,7 @@ function SignUp() {
                 className="pl-10 w-full"
                 placeholder="Confirm password"
                 type="password"
+                autoComplete="cc-number"
                 {...register("confirmPassword")}
               />
               {errors.confirmPassword && (
