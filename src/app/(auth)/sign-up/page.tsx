@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User, Mail, Lock } from "lucide-react";
@@ -31,7 +31,7 @@ function SignUp() {
         data.password
       ).then((res) => {
         sessionStorage.setItem("user", JSON.stringify(res.data.user));
-        sessionStorage.setItem("token", JSON.stringify(res.data.jwt));
+        sessionStorage.setItem("token", res.data.jwt);
         toast.success("Welcome! Your account has been created successfully.");
         router.push("/");
       });
@@ -44,10 +44,22 @@ function SignUp() {
     reset();
   };
 
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      router.push("/");
+    }
+  }, []);
+
   return (
-    <div className="flex items-baseline justify-center my-10 px-4">
+    <div className="flex items-baseline justify-center my-20 px-4">
       <div className="flex flex-col items-center justify-center p-6 sm:p-10 bg-slate-100 border border-gray-200 w-full max-w-md rounded-lg">
-        <h1 className="text-2xl font-bold text-gray-900">Create an Account</h1>
+        <div className="text-3xl font-bold text-gray-800 pb-5">
+          <Link href="/">MITRA KHAJA GHAR</Link>
+        </div>
+        <h1 className="text-xl font-semibold text-gray-900">
+          Create an Account
+        </h1>
         <p className="text-sm text-gray-500 mt-1">
           Enter your details below to create your account
         </p>
