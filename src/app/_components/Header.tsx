@@ -1,14 +1,37 @@
+"use client";
 import { Button } from "@/components/ui/button";
-import { Search, ShoppingCart } from "lucide-react";
+import { CircleUser, Search, ShoppingCart } from "lucide-react";
 import Category from "./Category";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function Header() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const signOut = () => {
+    sessionStorage.clear();
+    setIsLoggedIn(false);
+  };
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    setIsLoggedIn(false);
+    setIsLoggedIn(!!token);
+  }, []);
+
   return (
     <div className="shadow-md">
       <div className="max-w-screen-2xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="text-xl font-bold text-gray-800">
-          <Link href="/">MITRA</Link>
+          <Link href="/">MITRA KHAJA GHAR</Link>
         </div>
         <Category />
         <div className="relative md:flex gap-3 border rounded-full p-2 hidden">
@@ -28,9 +51,29 @@ function Header() {
               </span>
             </div>
           </h2>
-          <Link href={"/sign-in"}>
-            <Button>Login</Button>
-          </Link>
+          {!isLoggedIn ? (
+            <Link href={"/sign-in"}>
+              <Button>Login</Button>
+            </Link>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <CircleUser className="w-12 h-12 p-2 bg-green-100 rounded-full text-green-700 cursor-pointer" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>My Orders</DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => signOut()}
+                >
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </div>
