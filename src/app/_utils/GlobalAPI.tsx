@@ -1,4 +1,15 @@
 import axios from "axios";
+import { string } from "zod";
+
+type CartData = {
+  data: {
+    quantity: number;
+    amount: number;
+    products: string;
+    users_permissions_user: number;
+    userId: number;
+  };
+};
 
 const axiosClient = axios.create({
   baseURL: "http://localhost:1337/api",
@@ -41,6 +52,24 @@ const loginUser = (email: string, password: string) =>
     password: password,
   });
 
+const addToCart = (data: CartData, jwt: string) =>
+  axiosClient.post("/user-carts", data, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+const getUserCartItems = (userId: number, jwt: string) =>
+  axiosClient
+    .get(`/user-carts?filters[userId][$eq]=${userId}&populate=*`, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    })
+    .then((res) => {
+      return res.data.data;
+    });
+
 export default {
   getCategory,
   getCategoryList,
@@ -49,4 +78,6 @@ export default {
   getProductsByCategory,
   registerUser,
   loginUser,
+  addToCart,
+  getUserCartItems,
 };

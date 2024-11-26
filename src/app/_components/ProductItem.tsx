@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -11,6 +12,7 @@ import Link from "next/link";
 
 type Product = {
   id: number;
+  documentId: string;
   name: string;
   description: string;
   price: number;
@@ -80,6 +82,9 @@ function ProductItem({ products }: ProductItemProps) {
                     <DialogTitle className="sr-only">
                       {product.name}
                     </DialogTitle>
+                    <DialogDescription className="sr-only">
+                      {/* Description */}
+                    </DialogDescription>
                     <div className="text-sm text-zinc-500 dark:text-zinc-400">
                       <ProductItemDetail product={product} />
                     </div>

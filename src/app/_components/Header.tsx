@@ -1,9 +1,5 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { CircleUser, Search, ShoppingCart } from "lucide-react";
-import Category from "./Category";
-import Link from "next/link";
-import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,20 +8,62 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CircleUser, Search, ShoppingCart } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useUpdateCartContext } from "../_context/UpdateCartContext";
+import GlobalAPI from "../_utils/GlobalAPI";
+import Category from "./Category";
 
 function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [itemCount, setItemCount] = useState(0);
+  const [user, setUser] = useState<any>(null);
+  const [jwt, setJwt] = useState<string | null>(null);
+  const { updateCart, setUpdateCart } = useUpdateCartContext();
+
+  useEffect(() => {
+    // Only run on client side
+    const token = sessionStorage.getItem("token");
+    const userString = sessionStorage.getItem("user");
+
+    setIsLoggedIn(!!token);
+
+    if (userString) {
+      try {
+        setUser(JSON.parse(userString));
+      } catch (error) {
+        console.error("Error parsing user data", error);
+      }
+    }
+
+    setJwt(token);
+  }, []);
 
   const signOut = () => {
     sessionStorage.clear();
     setIsLoggedIn(false);
+    setUser(null);
+    setJwt(null);
+    setItemCount(0);
+  };
+
+  const getItemCount = async () => {
+    if (user && jwt) {
+      try {
+        const cartItemList = await GlobalAPI.getUserCartItems(user.id, jwt);
+        setItemCount(cartItemList.length);
+      } catch (error) {
+        console.error("Error fetching cart items", error);
+      }
+    }
   };
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    setIsLoggedIn(false);
-    setIsLoggedIn(!!token);
-  }, []);
+    if (isLoggedIn) {
+      getItemCount();
+    }
+  }, [isLoggedIn, user, jwt, updateCart]);
 
   return (
     <div className="shadow-md">
@@ -47,7 +85,7 @@ function Header() {
             <div className="relative">
               <ShoppingCart className="h-6 w-6" />
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                0
+                {itemCount}
               </span>
             </div>
           </h2>

@@ -3,6 +3,7 @@ import ProductItem from "./ProductItem";
 
 type Product = {
   id: number;
+  documentId: string;
   name: string;
   description: string;
   price: number;
