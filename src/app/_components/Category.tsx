@@ -27,8 +27,8 @@ function Category() {
     });
   };
   return (
-    <div>
-      <DropdownMenu>
+    <>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <h2 className="hidden md:flex gap-2 items-center p-2 px-5 border rounded-full bg-slate-200 cursor-pointer">
             <LayoutGrid className="h-5 w-5" /> Category
@@ -44,7 +44,7 @@ function Category() {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-    </div>
+    </>
   );
 }
 

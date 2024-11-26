@@ -15,10 +15,16 @@ import { useUpdateCartContext } from "../_context/UpdateCartContext";
 import GlobalAPI from "../_utils/GlobalAPI";
 import Category from "./Category";
 
+type User = {
+  id: number;
+  username?: string;
+  email?: string;
+};
+
 function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [itemCount, setItemCount] = useState(0);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [jwt, setJwt] = useState<string | null>(null);
   const { updateCart, setUpdateCart } = useUpdateCartContext();
 
@@ -63,7 +69,7 @@ function Header() {
     if (isLoggedIn) {
       getItemCount();
     }
-  }, [isLoggedIn, user, jwt, updateCart]);
+  }, [isLoggedIn, updateCart]);
 
   return (
     <div className="shadow-md">
@@ -94,7 +100,7 @@ function Header() {
               <Button>Login</Button>
             </Link>
           ) : (
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <CircleUser className="w-12 h-12 p-2 bg-green-100 rounded-full text-green-700 cursor-pointer" />
               </DropdownMenuTrigger>
