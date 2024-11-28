@@ -53,30 +53,14 @@ function Header() {
   const [subTotal, setSubTotal] = useState(0);
   const router = useRouter();
 
-  useEffect(() => {
-    // Only run on client side
-    const token = sessionStorage.getItem("token");
-    const userString = sessionStorage.getItem("user");
-
-    setIsLoggedIn(!!token);
-
-    if (userString) {
-      try {
-        setUser(JSON.parse(userString));
-      } catch (error) {
-        console.error("Error parsing user data", error);
-      }
-    }
-
-    setJwt(token);
-  }, []);
-
   const signOut = () => {
     sessionStorage.clear();
     setIsLoggedIn(false);
     setUser(null);
     setJwt(null);
     setItemCount(0);
+    setCartItemList([]);
+    setSubTotal(0);
   };
 
   const getItemCount = async () => {
@@ -100,6 +84,23 @@ function Header() {
       getItemCount();
     });
   };
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const userString = sessionStorage.getItem("user");
+
+    setIsLoggedIn(!!token);
+
+    if (userString) {
+      try {
+        setUser(JSON.parse(userString));
+      } catch (error) {
+        console.error("Error parsing user data", error);
+      }
+    }
+
+    setJwt(token);
+  }, []);
 
   useEffect(() => {
     let total = 0;
