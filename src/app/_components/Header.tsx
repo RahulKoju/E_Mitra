@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sheet";
 import CartItemList from "./CartItemList";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type User = {
   id: number;
@@ -50,6 +51,7 @@ function Header() {
   const { updateCart, setUpdateCart } = useUpdateCartContext();
   const [cartItemList, setCartItemList] = useState<CartItemViewModel[]>([]);
   const [subTotal, setSubTotal] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     // Only run on client side
@@ -166,7 +168,12 @@ function Header() {
                             Rs. {subTotal}
                           </span>
                         </div>
-                        <Button className="w-full bg-green-600 hover:bg-green-700 text-white transition-colors font-semibold text-md">
+                        <Button
+                          onClick={() =>
+                            router.push(jwt ? "/checkout" : "/sign-in")
+                          }
+                          className="w-full bg-green-600 hover:bg-green-700 text-white transition-colors font-semibold text-md"
+                        >
                           Proceed to checkout
                         </Button>
                       </div>
