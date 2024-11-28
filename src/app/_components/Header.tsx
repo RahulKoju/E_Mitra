@@ -15,10 +15,31 @@ import { useUpdateCartContext } from "../_context/UpdateCartContext";
 import GlobalAPI from "../_utils/GlobalAPI";
 import Category from "./Category";
 
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import CartItemList from "./CartItemList";
+import { toast } from "sonner";
+
 type User = {
   id: number;
   username?: string;
   email?: string;
+};
+
+type CartItemViewModel = {
+  name: string;
+  quantity: number;
+  amount: number;
+  image: string;
+  actualPrice: number;
+  id: string;
 };
 
 function Header() {
@@ -27,6 +48,8 @@ function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [jwt, setJwt] = useState<string | null>(null);
   const { updateCart, setUpdateCart } = useUpdateCartContext();
+  const [cartItemList, setCartItemList] = useState<CartItemViewModel[]>([]);
+  const [subTotal, setSubTotal] = useState(0);
 
   useEffect(() => {
     // Only run on client side
@@ -57,13 +80,32 @@ function Header() {
   const getItemCount = async () => {
     if (user && jwt) {
       try {
-        const cartItemList = await GlobalAPI.getUserCartItems(user.id, jwt);
-        setItemCount(cartItemList.length);
+        const userCartItemList: CartItemViewModel[] =
+          await GlobalAPI.getUserCartItems(user.id, jwt);
+        setItemCount(userCartItemList.length);
+        setCartItemList(userCartItemList);
       } catch (error) {
         console.error("Error fetching cart items", error);
+        setItemCount(0);
+        setCartItemList([]);
       }
     }
   };
+
+  const onDeleteCartItem = (id: string) => {
+    GlobalAPI.deleteCartItem(id, jwt).then((res) => {
+      toast("Item removed!");
+      getItemCount();
+    });
+  };
+
+  useEffect(() => {
+    let total = 0;
+    cartItemList.forEach((e) => {
+      total += e.amount;
+    });
+    setSubTotal(total);
+  }, [cartItemList]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -89,10 +131,58 @@ function Header() {
         <div className="flex gap-3 items-center">
           <h2 className="flex gap-2 items-center text-lg text-gray-700 cursor-pointer">
             <div className="relative">
-              <ShoppingCart className="h-6 w-6" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                {itemCount}
-              </span>
+              <Sheet>
+                <SheetTrigger>
+                  <div>
+                    <ShoppingCart className="h-6 w-6" />
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {itemCount}
+                    </span>
+                  </div>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle className="bg-green-600 text-white text-lg p-2 mt-5 font-bold text-center">
+                      My Orders
+                    </SheetTitle>
+                    <SheetDescription className="sr-only">
+                      {/* Description */}
+                    </SheetDescription>
+                    <div>
+                      <CartItemList
+                        cartItemList={cartItemList}
+                        onDeleteItem={onDeleteCartItem}
+                      />
+                    </div>
+                  </SheetHeader>
+                  <SheetClose asChild>
+                    {cartItemList.length > 0 ? (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-lg font-bold text-gray-800">
+                            Subtotal
+                          </span>
+                          <span className="text-xl font-bold text-green-600">
+                            Rs. {subTotal}
+                          </span>
+                        </div>
+                        <Button className="w-full bg-green-600 hover:bg-green-700 text-white transition-colors font-semibold text-md">
+                          Proceed to checkout
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-10">
+                        <p className="text-gray-500 text-xl">
+                          Your cart is empty
+                        </p>
+                        <p className="text-gray-400 text-sm mt-2">
+                          Add some delicious items!
+                        </p>
+                      </div>
+                    )}
+                  </SheetClose>
+                </SheetContent>
+              </Sheet>
             </div>
           </h2>
           {!isLoggedIn ? (

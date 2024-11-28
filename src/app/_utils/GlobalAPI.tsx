@@ -1,5 +1,4 @@
 import axios from "axios";
-import { string } from "zod";
 
 type CartData = {
   data: {
@@ -9,6 +8,35 @@ type CartData = {
     users_permissions_user: number;
     userId: number;
   };
+};
+
+type ProductImage = {
+  url: string;
+};
+
+type Product = {
+  id: number;
+  documentId: string;
+  name: string;
+  price: number;
+  images: ProductImage[];
+};
+
+type CartItemResponse = {
+  id: number;
+  documentId: string;
+  quantity: number;
+  amount: number;
+  products: Product[];
+};
+
+type CartItemViewModel = {
+  name: string;
+  quantity: number;
+  amount: number;
+  image: string;
+  actualPrice: number;
+  id: string;
 };
 
 const axiosClient = axios.create({
@@ -59,16 +87,43 @@ const addToCart = (data: CartData, jwt: string) =>
     },
   });
 
-const getUserCartItems = (userId: number, jwt: string) =>
+const getUserCartItems = (
+  userId: number,
+  jwt: string
+): Promise<CartItemViewModel[]> =>
   axiosClient
-    .get(`/user-carts?filters[userId][$eq]=${userId}&populate=*`, {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-      },
-    })
+    .get<{ data: CartItemResponse[] }>(
+      `/user-carts?filters[userId][$eq]=${userId}&populate[products][populate]=images`,
+      {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    )
     .then((res) => {
-      return res.data.data;
+      const data = res.data.data;
+      return data.map(
+        (item): CartItemViewModel => ({
+          name: item.products[0].name,
+          quantity: item.quantity,
+          amount: item.amount,
+          image: item.products[0].images[0]?.url || "",
+          actualPrice: item.products[0].price,
+          id: item.documentId,
+        })
+      );
     });
+
+const deleteCartItem = (id: string, jwt: string | null) => {
+  if (!jwt) {
+    return Promise.reject(new Error("No JWT token available"));
+  }
+  return axiosClient.delete(`/user-carts/${id}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+};
 
 export default {
   getCategory,
@@ -80,4 +135,5 @@ export default {
   loginUser,
   addToCart,
   getUserCartItems,
+  deleteCartItem,
 };
