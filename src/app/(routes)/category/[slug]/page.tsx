@@ -4,15 +4,12 @@ import TopCategoryList from "./_components/TopCategoryList";
 import ProductList from "@/app/_components/ProductList";
 
 type Params = {
-  slug: string;
+  params: { slug: string };
 };
 
-type Props = {
-  params: Params;
-};
-
-async function Category({ params }: Props) {
-  const productList = await GlobalAPI.getProductsByCategory(params.slug);
+async function Category({ params }: Params) {
+  const { slug } = await params;
+  const productList = await GlobalAPI.getProductsByCategory(slug);
   const categoryList = await GlobalAPI.getCategoryList();
   const formatCategoryName = (slug: string) => {
     return slug
@@ -23,13 +20,10 @@ async function Category({ params }: Props) {
   return (
     <div>
       <h2 className="p-4 bg-green-700 text-white text-center font-bold text-3xl">
-        {formatCategoryName(params.slug)}
+        {formatCategoryName(slug)}
       </h2>
 
-      <TopCategoryList
-        categoryList={categoryList}
-        selectedCategory={params.slug}
-      />
+      <TopCategoryList categoryList={categoryList} selectedCategory={slug} />
 
       <div className="max-w-7xl mx-auto px-8">
         <ProductList productList={productList} />
