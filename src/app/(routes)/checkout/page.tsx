@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard, Mail, MapPin, Phone, ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 type CartItemViewModel = {
   name: string;
@@ -14,12 +15,31 @@ type CartItemViewModel = {
   image: string;
   actualPrice: number;
   id: string;
+  product: string;
 };
 
 type User = {
   id: number;
   username?: string;
   email?: string;
+};
+
+type OrderItem = {
+  amount: number;
+  quantity: number;
+  product: string;
+};
+
+type OrderPayload = {
+  data: {
+    username: string;
+    email: string;
+    address: string;
+    phone_no: number;
+    totalOrderAmount: number;
+    userId: number;
+    orderItemList: OrderItem[];
+  };
 };
 
 function Checkout() {
@@ -84,9 +104,36 @@ function Checkout() {
     }
   }, [isLoggedIn]);
 
-  const onSubmit = (data: BillingDetails) => {
-    // Implement order submission logic
-    console.log("Order submitted", data);
+  const onSubmit = async (data: BillingDetails) => {
+    if (!user || !jwt) {
+      toast.error("Please log in to place an order");
+      return;
+    }
+    const payload: OrderPayload = {
+      data: {
+        username: data.name,
+        email: data.email,
+        address: data.address,
+        phone_no: Number(data.phoneNo),
+        totalOrderAmount: total,
+        userId: user.id,
+        orderItemList: cartItemList.map((item) => ({
+          amount: item.amount,
+          quantity: item.quantity,
+          product: item.product,
+        })),
+      },
+    };
+    try {
+      console.log(payload);
+      const response = await GlobalAPI.createOrder(payload, jwt);
+      console.log(response);
+      toast.success("Order placed successfully!");
+      reset();
+    } catch (error) {
+      console.error("Order placement error", error);
+      toast.error("Failed to place order. Please try again.");
+    }
   };
 
   return (

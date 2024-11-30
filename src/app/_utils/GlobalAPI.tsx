@@ -37,6 +37,25 @@ type CartItemViewModel = {
   image: string;
   actualPrice: number;
   id: string;
+  product: string;
+};
+
+type OrderItem = {
+  amount: number;
+  quantity: number;
+  product: string;
+};
+
+type OrderPayload = {
+  data: {
+    username: string;
+    email: string;
+    address: string;
+    phone_no: number;
+    totalOrderAmount: number;
+    userId: number;
+    orderItemList: OrderItem[];
+  };
 };
 
 const axiosClient = axios.create({
@@ -110,6 +129,7 @@ const getUserCartItems = (
           image: item.products[0].images[0]?.url || "",
           actualPrice: item.products[0].price,
           id: item.documentId,
+          product: item.products[0].documentId,
         })
       );
     });
@@ -125,6 +145,13 @@ const deleteCartItem = (id: string, jwt: string | null) => {
   });
 };
 
+const createOrder = (data: OrderPayload, jwt: string) =>
+  axiosClient.post("/orders", data, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
 export default {
   getCategory,
   getCategoryList,
@@ -136,4 +163,5 @@ export default {
   addToCart,
   getUserCartItems,
   deleteCartItem,
+  createOrder,
 };
