@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { BillingDetails, billingSchema } from "@/lib/type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard, Mail, MapPin, Phone, ShoppingCart } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -49,6 +50,7 @@ function Checkout() {
   const [itemCount, setItemCount] = useState(0);
   const [user, setUser] = useState<User | null>(null);
   const [jwt, setJwt] = useState<string | null>(null);
+  const router = useRouter();
   const taxRate = 0.13; // 13% tax
   const tax = subTotal * taxRate;
   const total = subTotal + tax;
@@ -125,11 +127,13 @@ function Checkout() {
       },
     };
     try {
-      console.log(payload);
-      const response = await GlobalAPI.createOrder(payload, jwt);
-      console.log(response);
+      await GlobalAPI.createOrder(payload, jwt);
+      cartItemList.forEach((item) => {
+        GlobalAPI.deleteCartItem(item.id, jwt);
+      });
       toast.success("Order placed successfully!");
       reset();
+      router.replace("/order-confirmation");
     } catch (error) {
       console.error("Order placement error", error);
       toast.error("Failed to place order. Please try again.");
