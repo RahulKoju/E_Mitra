@@ -63,6 +63,30 @@ function Checkout() {
     resolver: zodResolver(billingSchema),
   });
 
+  const checkAuthentication = () => {
+    const token = sessionStorage.getItem("token");
+    const userString = sessionStorage.getItem("user");
+
+    if (!token) {
+      toast.error("Please log in to access checkout");
+      router.replace("/sign-in");
+      return false;
+    }
+
+    try {
+      const parsedUser = userString ? JSON.parse(userString) : null;
+      setUser(parsedUser);
+      setIsLoggedIn(true);
+      setJwt(token);
+      return true;
+    } catch (error) {
+      console.error("Error parsing user data", error);
+      toast.error("Authentication error. Please log in again.");
+      router.replace("/sign-in");
+      return false;
+    }
+  };
+
   const getCartItems = async () => {
     if (user && jwt) {
       try {
@@ -79,17 +103,7 @@ function Checkout() {
   };
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    const userString = sessionStorage.getItem("user");
-    setIsLoggedIn(!!token);
-    if (userString) {
-      try {
-        setUser(JSON.parse(userString));
-      } catch (error) {
-        console.error("Error parsing user data", error);
-      }
-    }
-    setJwt(token);
+    checkAuthentication();
   }, []);
 
   useEffect(() => {
@@ -107,8 +121,12 @@ function Checkout() {
   }, [isLoggedIn]);
 
   const onSubmit = async (data: BillingDetails) => {
+    if (!checkAuthentication()) {
+      return;
+    }
     if (!user || !jwt) {
       toast.error("Please log in to place an order");
+      router.replace("/sign-in");
       return;
     }
     const payload: OrderPayload = {
