@@ -81,6 +81,7 @@ function Header() {
   const onDeleteCartItem = (id: string) => {
     GlobalAPI.deleteCartItem(id, jwt).then((res) => {
       toast("Item removed!");
+      setUpdateCart((prev) => prev - 1);
       getItemCount();
     });
   };

@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const params = usePathname();
-  const [updateCart, setUpdateCart] = useState(false);
+  const [updateCart, setUpdateCart] = useState(0);
   const show = params == "/sign-in" || params == "/sign-up" ? false : true;
   return (
     <html lang="en">

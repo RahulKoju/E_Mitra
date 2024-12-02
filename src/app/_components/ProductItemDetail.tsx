@@ -68,7 +68,7 @@ function ProductItemDetail({ product }: ProductItemProps) {
     try {
       await GlobalAPI.addToCart(data, jwt);
       toast.success("Added to cart successfully");
-      setUpdateCart(!updateCart);
+      setUpdateCart((prev) => prev + 1);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message || "Failed to add item to cart");

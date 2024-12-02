@@ -2,13 +2,13 @@ import { createContext, Dispatch, SetStateAction, useContext } from "react";
 
 // Context type definition
 type UpdateCartContextType = {
-  updateCart: boolean;
-  setUpdateCart: Dispatch<SetStateAction<boolean>>;
+  updateCart: number; // Change to number for more granular updates
+  setUpdateCart: Dispatch<SetStateAction<number>>;
 };
 
 // Create a default context value that matches the type
 const defaultContextValue: UpdateCartContextType = {
-  updateCart: false,
+  updateCart: 0,
   setUpdateCart: () => {},
 };
 

@@ -1,4 +1,5 @@
 "use client";
+import { useUpdateCartContext } from "@/app/_context/UpdateCartContext";
 import GlobalAPI from "@/app/_utils/GlobalAPI";
 import { Input } from "@/components/ui/input";
 import { BillingDetails, billingSchema } from "@/lib/type";
@@ -50,6 +51,7 @@ function Checkout() {
   const [itemCount, setItemCount] = useState(0);
   const [user, setUser] = useState<User | null>(null);
   const [jwt, setJwt] = useState<string | null>(null);
+  const { updateCart } = useUpdateCartContext();
   const router = useRouter();
   const taxRate = 0.13; // 13% tax
   const tax = subTotal * taxRate;
@@ -68,7 +70,7 @@ function Checkout() {
     const userString = sessionStorage.getItem("user");
 
     if (!token) {
-      toast.error("Please log in to access checkout");
+      toast.error("Please log in to place the order");
       router.replace("/sign-in");
       return false;
     }
@@ -118,7 +120,7 @@ function Checkout() {
     if (isLoggedIn) {
       getCartItems();
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, updateCart]);
 
   const onSubmit = async (data: BillingDetails) => {
     if (!checkAuthentication()) {
