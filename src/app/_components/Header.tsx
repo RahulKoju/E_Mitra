@@ -207,7 +207,9 @@ function Header() {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>My Orders</DropdownMenuItem>
+                <Link href={"/my-order"}>
+                  <DropdownMenuItem>My Orders</DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={() => signOut()}

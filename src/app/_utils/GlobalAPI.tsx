@@ -58,6 +58,27 @@ type OrderPayload = {
   };
 };
 
+type OrderItemDetails = {
+  id: number;
+  quantity: number;
+  amount: number;
+  product: Product;
+};
+
+type MyOrder = {
+  id: string;
+  totalOrderAmount: number;
+  createdAt: string;
+  orderItemList: OrderItemDetails[];
+};
+
+type MyOrderResponse = {
+  documentId: string;
+  totalOrderAmount: number;
+  createdAt: string;
+  orderItemList: OrderItemDetails[];
+};
+
 const axiosClient = axios.create({
   baseURL: "http://localhost:1337/api",
 });
@@ -152,6 +173,29 @@ const createOrder = (data: OrderPayload, jwt: string) =>
     },
   });
 
+const getMyOrders = (userId: number, jwt: string): Promise<MyOrder[]> =>
+  axiosClient
+    .get<{ data: MyOrderResponse[] }>(
+      `/orders?filters[userId][$eq]=${userId}&populate[orderItemList][populate][product][populate]=images`,
+      {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    )
+    .then((res) => {
+      const data = res.data.data;
+      const orderList = data.map(
+        (item): MyOrder => ({
+          id: item.documentId,
+          totalOrderAmount: item.totalOrderAmount,
+          createdAt: item.createdAt,
+          orderItemList: item.orderItemList,
+        })
+      );
+      return orderList;
+    });
+
 export default {
   getCategory,
   getCategoryList,
@@ -164,4 +208,5 @@ export default {
   getUserCartItems,
   deleteCartItem,
   createOrder,
+  getMyOrders,
 };
