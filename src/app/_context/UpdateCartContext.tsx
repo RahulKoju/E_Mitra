@@ -22,23 +22,17 @@ export const UpdateCartProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [updateCart, setUpdateCart] = useState(0);
-  useEffect(() => {
-    const storedUpdateCart = localStorage.getItem("updateCart");
-    if (storedUpdateCart) {
-      setUpdateCart(parseInt(storedUpdateCart, 10));
-    }
-  }, []);
 
   // Method to increment cart update counter
   const incrementCart = () => {
-    const newUpdateCount = updateCart + 1;
-    setUpdateCart(newUpdateCount);
+    setUpdateCart((prev) => prev + 1);
   };
-  // Method to decrement cart update counter
+
+  // Method to decrement cart update counter and prevents negative values
   const decrementCart = () => {
-    const newUpdateCount = updateCart - 1;
-    setUpdateCart(newUpdateCount);
+    setUpdateCart((prev) => Math.max(0, prev - 1));
   };
+
   // Method to reset cart update counter
   const resetCart = () => {
     setUpdateCart(0);
