@@ -72,7 +72,11 @@ function MyOrder() {
           user.id,
           jwt
         );
-        setOrderList(userOrderList);
+        // Sort orders by creation date in descending order (most recent first)
+        const sortedOrders = userOrderList.sort((a, b) =>
+          dayjs(b.createdAt).diff(dayjs(a.createdAt))
+        );
+        setOrderList(sortedOrders);
       }
     } catch (error) {
       console.error("Error fetching orders", error);
