@@ -8,18 +8,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CircleUser, Search, ShoppingCart } from "lucide-react";
+import { CircleUser, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUpdateCart } from "../_context/UpdateCartContext";
 import GlobalAPI from "../_utils/GlobalAPI";
-import Category from "./Category";
 
 import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -28,6 +26,7 @@ import CartItemList from "./CartItemList";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../_context/AuthContext";
+import Category from "./Category";
 
 type CartItemViewModel = {
   name: string;
@@ -97,22 +96,36 @@ function Header() {
           <Link href="/">MITRA KHAJA GHAR</Link>
         </div>
         <Category />
-        <div className="relative md:flex gap-3 border rounded-full p-2 hidden">
-          <Search className="text-gray-700 absolute left-3 top-1/2 transform -translate-y-1/2" />
-          <input
-            className="pl-10 outline-none w-full"
-            type="text"
-            placeholder="Search for products..."
-          />
-        </div>
+        {/* Navigation Menu */}
+        <nav className="hidden md:flex space-x-6 text-gray-700 font-semibold">
+          <Link
+            href="/product"
+            className="hover:text-green-600 transition-colors font-medium"
+          >
+            Products
+          </Link>
+          <Link
+            href="/about"
+            className="hover:text-green-600 transition-colors font-medium"
+          >
+            About
+          </Link>
+          <Link
+            href="/contact"
+            className="hover:text-green-600 transition-colors font-medium"
+          >
+            Contact
+          </Link>
+        </nav>
+
         <div className="flex gap-3 items-center">
           <h2 className="flex gap-2 items-center text-lg text-gray-700 cursor-pointer">
             <div className="relative">
               <Sheet>
                 <SheetTrigger>
-                  <div>
+                  <div className="pt-2">
                     <ShoppingCart className="h-6 w-6" />
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    <span className="absolute top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                       {itemCount}
                     </span>
                   </div>
@@ -122,9 +135,6 @@ function Header() {
                     <SheetTitle className="bg-green-600 text-white text-lg p-2 mt-5 font-bold text-center">
                       My Orders
                     </SheetTitle>
-                    <SheetDescription className="sr-only">
-                      {/* Description */}
-                    </SheetDescription>
                     <div>
                       <CartItemList
                         cartItemList={cartItemList}

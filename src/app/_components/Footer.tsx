@@ -169,7 +169,7 @@ function Footer() {
               </li>
               <li className="flex items-center gap-3 text-gray-600">
                 <Mail className="flex-shrink-0 text-green-600" size={18} />
-                <span>contact@restaurant.com</span>
+                <span>mitra@gmail.com</span>
               </li>
               <li className="flex items-center gap-2 mt-4">
                 <Star

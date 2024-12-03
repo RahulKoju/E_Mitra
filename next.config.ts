@@ -6,26 +6,32 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: true,
   },
-  images:{
-    remotePatterns:[
+  images: {
+    remotePatterns: [
       {
-        protocol:'http',
-        hostname:"localhost",
-        port:"1337",
-        pathname:"/public/**/*",
+        protocol: "https",
+        hostname: "scontent.fktm21-2.fna.fbcdn.net",
+        port: "",
+        pathname: "/v/**",
       },
       {
-        protocol:'http',
-        hostname:"localhost",
-        port:"1337",
-        pathname:"/uploads/**",
+        protocol: "http",
+        hostname: "localhost",
+        port: "1337",
+        pathname: "/public/**/*",
       },
       {
-        protocol:'https',
-        hostname:"res.cloudinary.com",
+        protocol: "http",
+        hostname: "localhost",
+        port: "1337",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
       },
     ],
-  }
+  },
 };
 
 export default nextConfig;
