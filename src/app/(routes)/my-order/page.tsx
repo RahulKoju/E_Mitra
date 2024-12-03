@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import MyOrderItem from "./_component/MyOrderItem";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/_context/AuthContext";
+import { LoaderCircleIcon } from "lucide-react"; // Importing loader icon
 
 type ProductImage = {
   url: string;
@@ -42,6 +43,7 @@ type MyOrder = {
 function MyOrder() {
   const { isLoggedIn, user, jwt } = useAuth();
   const [orderList, setOrderList] = useState<MyOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const checkAuthentication = () => {
@@ -66,13 +68,13 @@ function MyOrder() {
   };
 
   const getMyOrders = async () => {
+    setIsLoading(true);
     try {
       if (user && jwt) {
         const userOrderList: MyOrder[] = await GlobalAPI.getMyOrders(
           user.id,
           jwt
         );
-        // Sort orders by creation date in descending order (most recent first)
         const sortedOrders = userOrderList.sort((a, b) =>
           dayjs(b.createdAt).diff(dayjs(a.createdAt))
         );
@@ -81,6 +83,8 @@ function MyOrder() {
     } catch (error) {
       console.error("Error fetching orders", error);
       toast.error("Failed to load orders. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,7 +109,11 @@ function MyOrder() {
           Order History
         </h2>
 
-        {orderList.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <LoaderCircleIcon className="animate-spin text-green-500 h-10 w-10" />
+          </div>
+        ) : orderList.length > 0 ? (
           <div className="space-y-4">
             {orderList.map((order, index) => (
               <Collapsible key={order.id}>

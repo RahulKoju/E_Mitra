@@ -5,7 +5,14 @@ import GlobalAPI from "@/app/_utils/GlobalAPI";
 import { Input } from "@/components/ui/input";
 import { BillingDetails, billingSchema } from "@/lib/type";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreditCard, Mail, MapPin, Phone, ShoppingCart } from "lucide-react";
+import {
+  CreditCard,
+  LoaderCircleIcon,
+  Mail,
+  MapPin,
+  Phone,
+  ShoppingCart,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -43,7 +50,8 @@ function Checkout() {
   const [cartItemList, setCartItemList] = useState<CartItemViewModel[]>([]);
   const [subTotal, setSubTotal] = useState(0);
   const [itemCount, setItemCount] = useState(0);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingCart, setLoadingCart] = useState(false);
   const { updateCart, resetCart } = useUpdateCart();
   const { isLoggedIn, user, jwt } = useAuth();
   const router = useRouter();
@@ -83,6 +91,7 @@ function Checkout() {
   };
 
   const getCartItems = async () => {
+    setLoadingCart(true);
     if (user && jwt) {
       try {
         const orderItems: CartItemViewModel[] =
@@ -93,6 +102,8 @@ function Checkout() {
         console.error("Error fetching cart items", error);
         setCartItemList([]);
         setItemCount(0);
+      } finally {
+        setLoadingCart(false);
       }
     }
   };
@@ -113,6 +124,7 @@ function Checkout() {
   }, [isLoggedIn, updateCart]);
 
   const onSubmit = async (data: BillingDetails) => {
+    setIsLoading(true);
     if (!checkAuthentication()) {
       return;
     }
@@ -138,7 +150,6 @@ function Checkout() {
         })),
       },
     };
-
     try {
       await GlobalAPI.createOrder(payload, jwt);
 
@@ -154,6 +165,8 @@ function Checkout() {
     } catch (error) {
       console.error("Order placement error", error);
       toast.error("Failed to place order. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -173,7 +186,7 @@ function Checkout() {
         >
           {/* Billing Details Section */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
+            <h2 className="text-2xl fo // Stop loadingnt-bold mb-6 flex items-center text-gray-800">
               <CreditCard className="mr-3 text-blue-600" size={28} />
               Billing Details
             </h2>
@@ -293,7 +306,11 @@ function Checkout() {
               Order Summary ({itemCount})
             </h2>
 
-            {cartItemList.length === 0 ? (
+            {loadingCart ? (
+              <div className="flex justify-center items-center py-12">
+                <LoaderCircleIcon className="animate-spin text-blue-600 h-12 w-12" />
+              </div>
+            ) : cartItemList.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <ShoppingCart
                   size={48}
@@ -346,10 +363,14 @@ function Checkout() {
           <div className="md:col-span-2">
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={cartItemList.length === 0}
+              className="w-full bg-blue-600 text-white font-semibold py-4 rounded-lg hover:bg-blue-700 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-center items-center"
+              disabled={cartItemList.length === 0 || isLoading}
             >
-              Place Order
+              {isLoading ? (
+                <LoaderCircleIcon className="animate-spin text-white h-6 w-6" />
+              ) : (
+                "Place Order"
+              )}
             </button>
           </div>
         </form>
