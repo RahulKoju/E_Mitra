@@ -7,9 +7,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User, Mail, Lock } from "lucide-react";
 import { signUpSchema, TSignUpSchema } from "@/lib/type";
-import GlobalAPI from "@/app/_utils/GlobalAPI";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useAuth } from "@/app/_context/AuthContext";
 
 function SignUp() {
   const {
@@ -21,35 +20,24 @@ function SignUp() {
     resolver: zodResolver(signUpSchema),
   });
 
+  const { signUp, isLoggedIn } = useAuth();
   const router = useRouter();
 
   const onSubmit = async (data: TSignUpSchema) => {
     try {
-      await GlobalAPI.registerUser(
-        data.username,
-        data.email,
-        data.password
-      ).then((res) => {
-        sessionStorage.setItem("user", JSON.stringify(res.data.user));
-        sessionStorage.setItem("token", res.data.jwt);
-        toast.success("Welcome! Your account has been created successfully.");
-        router.push("/");
-      });
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.error?.message ||
-        "An error occurred while creating your account. Please try again.";
-      toast.error(errorMessage);
+      await signUp(data.username, data.email, data.password);
+    } catch (error) {
+      // Error handling is done in the signUp method
+    } finally {
+      reset();
     }
-    reset();
   };
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    if (token) {
+    if (isLoggedIn) {
       router.push("/");
     }
-  }, []);
+  }, [isLoggedIn, router]);
 
   return (
     <div className="flex items-baseline justify-center my-20 px-4">

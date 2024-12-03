@@ -1,15 +1,14 @@
 "use client";
-import GlobalAPI from "@/app/_utils/GlobalAPI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { signInSchema, TSignInSchema } from "@/lib/type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/_context/AuthContext";
 
 function SignIn() {
   const {
@@ -21,31 +20,24 @@ function SignIn() {
     resolver: zodResolver(signInSchema),
   });
 
+  const { signIn, isLoggedIn } = useAuth();
   const router = useRouter();
 
   const onSubmit = async (data: TSignInSchema) => {
     try {
-      await GlobalAPI.loginUser(data.email, data.password).then((res) => {
-        sessionStorage.setItem("user", JSON.stringify(res.data.user));
-        sessionStorage.setItem("token", res.data.jwt);
-        toast.success("Successfully signed in!");
-        router.push("/");
-      });
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.error?.message ||
-        "An error occurred while signing in to your account. Please try again.";
-      toast.error(errorMessage);
+      await signIn(data.email, data.password);
+    } catch (error) {
+      // Error handling is done in the signIn method
+    } finally {
+      reset();
     }
-    reset();
   };
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    if (token) {
+    if (isLoggedIn) {
       router.push("/");
     }
-  }, []);
+  }, [isLoggedIn, router]);
 
   return (
     <div className="flex items-baseline justify-center my-20 px-4">

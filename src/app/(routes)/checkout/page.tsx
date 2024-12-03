@@ -1,5 +1,6 @@
 "use client";
-import { useUpdateCartContext } from "@/app/_context/UpdateCartContext";
+import { useAuth } from "@/app/_context/AuthContext";
+import { useUpdateCart } from "@/app/_context/UpdateCartContext";
 import GlobalAPI from "@/app/_utils/GlobalAPI";
 import { Input } from "@/components/ui/input";
 import { BillingDetails, billingSchema } from "@/lib/type";
@@ -18,12 +19,6 @@ type CartItemViewModel = {
   actualPrice: number;
   id: string;
   product: string;
-};
-
-type User = {
-  id: number;
-  username?: string;
-  email?: string;
 };
 
 type OrderItem = {
@@ -46,16 +41,17 @@ type OrderPayload = {
 
 function Checkout() {
   const [cartItemList, setCartItemList] = useState<CartItemViewModel[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [subTotal, setSubTotal] = useState(0);
   const [itemCount, setItemCount] = useState(0);
-  const [user, setUser] = useState<User | null>(null);
-  const [jwt, setJwt] = useState<string | null>(null);
-  const { updateCart } = useUpdateCartContext();
+
+  const { updateCart, resetCart } = useUpdateCart();
+  const { isLoggedIn, user, jwt } = useAuth();
   const router = useRouter();
+
   const taxRate = 0.13; // 13% tax
   const tax = subTotal * taxRate;
   const total = subTotal + tax;
+
   const {
     register,
     handleSubmit,
@@ -77,10 +73,7 @@ function Checkout() {
 
     try {
       const parsedUser = userString ? JSON.parse(userString) : null;
-      setUser(parsedUser);
-      setIsLoggedIn(true);
-      setJwt(token);
-      return true;
+      return parsedUser !== null;
     } catch (error) {
       console.error("Error parsing user data", error);
       toast.error("Authentication error. Please log in again.");
@@ -109,10 +102,7 @@ function Checkout() {
   }, []);
 
   useEffect(() => {
-    let total = 0;
-    cartItemList.forEach((e) => {
-      total += e.amount;
-    });
+    const total = cartItemList.reduce((sum, item) => sum + item.amount, 0);
     setSubTotal(total);
   }, [cartItemList]);
 
@@ -126,11 +116,13 @@ function Checkout() {
     if (!checkAuthentication()) {
       return;
     }
+
     if (!user || !jwt) {
       toast.error("Please log in to place an order");
       router.replace("/sign-in");
       return;
     }
+
     const payload: OrderPayload = {
       data: {
         username: data.name,
@@ -146,11 +138,16 @@ function Checkout() {
         })),
       },
     };
+
     try {
       await GlobalAPI.createOrder(payload, jwt);
-      cartItemList.forEach((item) => {
-        GlobalAPI.deleteCartItem(item.id, jwt);
-      });
+
+      // Delete cart items
+      const deletePromises = cartItemList.map((item) =>
+        GlobalAPI.deleteCartItem(item.id, jwt)
+      );
+      await Promise.all(deletePromises);
+      resetCart();
       toast.success("Order placed successfully!");
       reset();
       router.replace("/order-confirmation");

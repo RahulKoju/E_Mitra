@@ -11,7 +11,7 @@ import {
 import { CircleUser, Search, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useUpdateCartContext } from "../_context/UpdateCartContext";
+import { useUpdateCart } from "../_context/UpdateCartContext";
 import GlobalAPI from "../_utils/GlobalAPI";
 import Category from "./Category";
 
@@ -27,12 +27,7 @@ import {
 import CartItemList from "./CartItemList";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-type User = {
-  id: number;
-  username?: string;
-  email?: string;
-};
+import { useAuth } from "../_context/AuthContext";
 
 type CartItemViewModel = {
   name: string;
@@ -44,20 +39,15 @@ type CartItemViewModel = {
 };
 
 function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [itemCount, setItemCount] = useState(0);
-  const [user, setUser] = useState<User | null>(null);
-  const [jwt, setJwt] = useState<string | null>(null);
-  const { updateCart, setUpdateCart } = useUpdateCartContext();
+  const { isLoggedIn, user, jwt, logout } = useAuth();
+  const { updateCart, decrementCart } = useUpdateCart();
   const [cartItemList, setCartItemList] = useState<CartItemViewModel[]>([]);
   const [subTotal, setSubTotal] = useState(0);
   const router = useRouter();
 
   const signOut = () => {
-    sessionStorage.clear();
-    setIsLoggedIn(false);
-    setUser(null);
-    setJwt(null);
+    logout();
     setItemCount(0);
     setCartItemList([]);
     setSubTotal(0);
@@ -81,27 +71,10 @@ function Header() {
   const onDeleteCartItem = (id: string) => {
     GlobalAPI.deleteCartItem(id, jwt).then((res) => {
       toast("Item removed!");
-      setUpdateCart((prev) => prev - 1);
+      decrementCart();
       getItemCount();
     });
   };
-
-  useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    const userString = sessionStorage.getItem("user");
-
-    setIsLoggedIn(!!token);
-
-    if (userString) {
-      try {
-        setUser(JSON.parse(userString));
-      } catch (error) {
-        console.error("Error parsing user data", error);
-      }
-    }
-
-    setJwt(token);
-  }, []);
 
   useEffect(() => {
     let total = 0;

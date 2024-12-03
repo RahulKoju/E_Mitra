@@ -11,12 +11,7 @@ import {
 import dayjs from "dayjs";
 import MyOrderItem from "./_component/MyOrderItem";
 import { Button } from "@/components/ui/button";
-
-type User = {
-  id: number;
-  username?: string;
-  email?: string;
-};
+import { useAuth } from "@/app/_context/AuthContext";
 
 type ProductImage = {
   url: string;
@@ -45,9 +40,7 @@ type MyOrder = {
 };
 
 function MyOrder() {
-  const [user, setUser] = useState<User | null>(null);
-  const [jwt, setJwt] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const { isLoggedIn, user, jwt } = useAuth();
   const [orderList, setOrderList] = useState<MyOrder[]>([]);
   const router = useRouter();
 
@@ -63,11 +56,7 @@ function MyOrder() {
 
     try {
       const parsedUser = JSON.parse(userString);
-      if (!parsedUser || !parsedUser.id) throw new Error("Invalid user data");
-      setUser(parsedUser);
-      setIsLoggedIn(true);
-      setJwt(token);
-      return true;
+      return parsedUser !== null;
     } catch (error) {
       console.error("Error parsing user data", error);
       toast.error("Authentication error. Please log in again.");

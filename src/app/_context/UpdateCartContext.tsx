@@ -1,30 +1,68 @@
-import { createContext, Dispatch, SetStateAction, useContext } from "react";
+"use client";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+} from "react";
 
-// Context type definition
 type UpdateCartContextType = {
-  updateCart: number; // Change to number for more granular updates
-  setUpdateCart: Dispatch<SetStateAction<number>>;
+  updateCart: number;
+  incrementCart: () => void;
+  decrementCart: () => void;
+  resetCart: () => void;
 };
 
-// Create a default context value that matches the type
-const defaultContextValue: UpdateCartContextType = {
-  updateCart: 0,
-  setUpdateCart: () => {},
+const UpdateCartContext = createContext<UpdateCartContextType | undefined>(
+  undefined
+);
+
+export const UpdateCartProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [updateCart, setUpdateCart] = useState(0);
+  useEffect(() => {
+    const storedUpdateCart = localStorage.getItem("updateCart");
+    if (storedUpdateCart) {
+      setUpdateCart(parseInt(storedUpdateCart, 10));
+    }
+  }, []);
+
+  // Method to increment cart update counter
+  const incrementCart = () => {
+    const newUpdateCount = updateCart + 1;
+    setUpdateCart(newUpdateCount);
+  };
+  // Method to decrement cart update counter
+  const decrementCart = () => {
+    const newUpdateCount = updateCart - 1;
+    setUpdateCart(newUpdateCount);
+  };
+  // Method to reset cart update counter
+  const resetCart = () => {
+    setUpdateCart(0);
+  };
+
+  // Context value
+  const contextValue = {
+    updateCart,
+    incrementCart,
+    decrementCart,
+    resetCart,
+  };
+
+  return (
+    <UpdateCartContext.Provider value={contextValue}>
+      {children}
+    </UpdateCartContext.Provider>
+  );
 };
 
-// Create the context with a non-null default value
-export const UpdateCartContext =
-  createContext<UpdateCartContextType>(defaultContextValue);
-
-// Optional: Create a custom hook for easier context usage
-export const useUpdateCartContext = () => {
+export const useUpdateCart = () => {
   const context = useContext(UpdateCartContext);
-
-  // Optional: Add a runtime check if you want to ensure the context is used within a provider
-  if (context === defaultContextValue) {
-    throw new Error(
-      "useUpdateCartContext must be used within an UpdateCartProvider"
-    );
+  if (context === undefined) {
+    throw new Error("useUpdateCart must be used within an UpdateCartProvider");
   }
 
   return context;

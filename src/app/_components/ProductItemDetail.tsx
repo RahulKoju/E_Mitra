@@ -3,13 +3,10 @@ import { LoaderCircleIcon, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useContext, useState } from "react";
-import GlobalAPI from "../_utils/GlobalAPI";
+import { useState } from "react";
 import { toast } from "sonner";
-import {
-  UpdateCartContext,
-  useUpdateCartContext,
-} from "../_context/UpdateCartContext";
+import { useUpdateCart } from "../_context/UpdateCartContext";
+import GlobalAPI from "../_utils/GlobalAPI";
 
 type Product = {
   id: number;
@@ -35,7 +32,7 @@ type ProductItemProps = {
 function ProductItemDetail({ product }: ProductItemProps) {
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const { updateCart, setUpdateCart } = useUpdateCartContext();
+  const { incrementCart } = useUpdateCart();
   const totalPrice = quantity * product.price;
   const jwt = sessionStorage.getItem("token");
   const userString = sessionStorage.getItem("user");
@@ -68,7 +65,7 @@ function ProductItemDetail({ product }: ProductItemProps) {
     try {
       await GlobalAPI.addToCart(data, jwt);
       toast.success("Added to cart successfully");
-      setUpdateCart((prev) => prev + 1);
+      incrementCart();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message || "Failed to add item to cart");
