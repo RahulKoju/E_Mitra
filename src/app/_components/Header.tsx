@@ -18,6 +18,7 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -27,6 +28,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../_context/AuthContext";
 import Category from "./Category";
+import NavMenu from "./NavMenu";
 
 type CartItemViewModel = {
   name: string;
@@ -95,28 +97,10 @@ function Header() {
         <div className="text-xl font-bold text-gray-800">
           <Link href="/">MITRA KHAJA GHAR</Link>
         </div>
+
         <Category />
-        {/* Navigation Menu */}
-        <nav className="hidden md:flex space-x-6 text-gray-700 font-semibold">
-          <Link
-            href="/product"
-            className="hover:text-green-600 transition-colors font-medium"
-          >
-            Products
-          </Link>
-          <Link
-            href="/about"
-            className="hover:text-green-600 transition-colors font-medium"
-          >
-            About
-          </Link>
-          <Link
-            href="/contact"
-            className="hover:text-green-600 transition-colors font-medium"
-          >
-            Contact
-          </Link>
-        </nav>
+
+        <NavMenu />
 
         <div className="flex gap-3 items-center">
           <h2 className="flex gap-2 items-center text-lg text-gray-700 cursor-pointer">
@@ -135,6 +119,9 @@ function Header() {
                     <SheetTitle className="bg-green-600 text-white text-lg p-2 mt-5 font-bold text-center">
                       My Orders
                     </SheetTitle>
+                    <SheetDescription className="sr-only">
+                      SheetDescription
+                    </SheetDescription>
                     <div>
                       <CartItemList
                         cartItemList={cartItemList}
