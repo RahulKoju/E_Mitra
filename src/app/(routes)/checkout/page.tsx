@@ -152,8 +152,14 @@ function Checkout() {
     };
     try {
       await GlobalAPI.createOrder(payload, jwt);
-      // Delete cart items
-      cartItemList.map((item) => GlobalAPI.deleteCartItem(item.id, jwt));
+      // Delete cart items and update local state immediately
+      const deletePromises = cartItemList.map((item) =>
+        GlobalAPI.deleteCartItem(item.id, jwt)
+      );
+      await Promise.all(deletePromises);
+      setCartItemList([]);
+      setItemCount(0);
+      setSubTotal(0);
       resetCart();
       toast.success("Order placed successfully!");
       reset();

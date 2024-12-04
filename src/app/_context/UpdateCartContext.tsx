@@ -1,11 +1,5 @@
 "use client";
-import React, {
-  createContext,
-  useState,
-  useContext,
-  useEffect,
-  ReactNode,
-} from "react";
+import React, { createContext, ReactNode, useContext, useState } from "react";
 
 type UpdateCartContextType = {
   updateCart: number;

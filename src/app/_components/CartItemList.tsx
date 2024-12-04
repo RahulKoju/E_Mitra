@@ -1,8 +1,5 @@
-"use client";
-import { Button } from "@/components/ui/button";
 import { Trash2Icon } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
 
 type CartItemViewModel = {
   name: string;
