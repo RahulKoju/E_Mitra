@@ -38,6 +38,7 @@ type MyOrder = {
   totalOrderAmount: number;
   createdAt: string;
   orderItemList: OrderItemDetails[];
+  orderStatus: string;
 };
 
 function MyOrder() {
@@ -138,7 +139,7 @@ function MyOrder() {
                         <div>
                           <span className="font-semibold mr-2">Status:</span>
                           <span className="text-yellow-600 font-medium">
-                            PENDING
+                            {order.orderStatus}
                           </span>
                         </div>
                       </div>

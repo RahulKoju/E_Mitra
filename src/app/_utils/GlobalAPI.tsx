@@ -65,11 +65,26 @@ type OrderItemDetails = {
   product: Product;
 };
 
+type Order = {
+  id: number;
+  address: string;
+  createdAt: string;
+  documentId: string;
+  email: string;
+  orderItemList: OrderItemDetails[];
+  phone_no: string;
+  totalOrderAmount: number;
+  userId: number;
+  username: string;
+  orderStatus: string;
+};
+
 type MyOrder = {
   id: string;
   totalOrderAmount: number;
   createdAt: string;
   orderItemList: OrderItemDetails[];
+  orderStatus: string;
 };
 
 type MyOrderResponse = {
@@ -77,6 +92,7 @@ type MyOrderResponse = {
   totalOrderAmount: number;
   createdAt: string;
   orderItemList: OrderItemDetails[];
+  orderStatus: string;
 };
 
 const axiosClient = axios.create({
@@ -191,10 +207,23 @@ const getMyOrders = (userId: number, jwt: string): Promise<MyOrder[]> =>
           totalOrderAmount: item.totalOrderAmount,
           createdAt: item.createdAt,
           orderItemList: item.orderItemList,
+          orderStatus: item.orderStatus,
         })
       );
       return orderList;
     });
+
+const getAllOrders = (jwt: string): Promise<Order[]> =>
+  axiosClient
+    .get<{ data: Order[] }>(
+      "/orders?populate[orderItemList][populate][product][populate]=images",
+      {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    )
+    .then((res) => res.data.data);
 
 export default {
   getCategory,
@@ -209,4 +238,5 @@ export default {
   deleteCartItem,
   createOrder,
   getMyOrders,
+  getAllOrders,
 };

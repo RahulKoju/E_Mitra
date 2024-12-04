@@ -8,7 +8,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CircleUser, ShoppingCart } from "lucide-react";
+import {
+  CircleUser,
+  LayoutDashboard,
+  LogOut,
+  ShoppingBag,
+  ShoppingCart,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUpdateCart } from "../_context/UpdateCartContext";
@@ -174,16 +180,35 @@ function Header() {
                 <CircleUser className="w-12 h-12 p-2 bg-green-100 rounded-full text-green-700 cursor-pointer" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel className="flex items-center space-x-3 p-2">
+                  <CircleUser className="w-8 h-8 text-gray-400" />
+                  <div>
+                    <p className="text-sm font-semibold">
+                      {user?.username || "User"}
+                    </p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
+                {user?.admin && (
+                  <Link href={"/dashboard"}>
+                    <DropdownMenuItem>
+                      <LayoutDashboard className="mr-1 h-4 w-4" />
+                      Dashboard
+                    </DropdownMenuItem>
+                  </Link>
+                )}
                 <Link href={"/my-order"}>
-                  <DropdownMenuItem>My Orders</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <ShoppingBag className="mr-1 h-4 w-4" />
+                    My Orders
+                  </DropdownMenuItem>
                 </Link>
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={() => signOut()}
                 >
+                  <LogOut className="mr-1 h-4 w-4" />
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
