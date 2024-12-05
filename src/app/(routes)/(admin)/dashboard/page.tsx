@@ -2,10 +2,11 @@
 import { useAuth } from "@/app/_context/AuthContext";
 import GlobalAPI from "@/app/_utils/GlobalAPI";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, UserCog } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PendingOrderTable from "./_components/PendingOrderTable";
+import Analytics from "./Analytics";
 
 type ProductImage = {
   url: string;
@@ -91,31 +92,76 @@ function Dashboard() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-green-700 text-center">
-        Admin Dashboard
-      </h1>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-green-700 mb-4 md:mb-0">
+          Admin Dashboard
+        </h1>
+        <div className="flex items-center space-x-2 text-gray-600">
+          <UserCog className="w-6 h-6" />
+          <span className="text-sm font-medium">
+            {user.username?.toLocaleUpperCase()}
+          </span>
+        </div>
+      </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Admin Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <p>
-              <strong>Username:</strong> {user.username}
-            </p>
-            <p>
-              <strong>Email:</strong> {user.email}
-            </p>
-            <p>
-              <strong>Role:</strong> Administrator
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <Card className="w-full">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center space-x-2">
+              <UserCog className="w-5 h-5" />
+              <span>Admin Details</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Username:</span>
+                <span className="text-gray-800">{user.username}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Email:</span>
+                <span className="text-gray-800">{user.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Role:</span>
+                <span className="text-green-600 font-semibold">
+                  Administrator
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      <PendingOrderTable orders={orders} orderLoading={orderLoading} />
+        <Card className="w-full bg-green-50/50">
+          <CardHeader>
+            <CardTitle className="text-green-800">Quick Stats</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-700">
+                  {orders.length}
+                </div>
+                <div className="text-sm text-gray-600">Total Orders</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-700">
+                  {orders
+                    .reduce((sum, order) => sum + order.totalOrderAmount, 0)
+                    .toFixed(2)}
+                </div>
+                <div className="text-sm text-gray-600">Total Revenue</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="space-y-6">
+        <PendingOrderTable orders={orders} orderLoading={orderLoading} />
+        <Analytics orders={orders} />
+      </div>
     </div>
   );
 }

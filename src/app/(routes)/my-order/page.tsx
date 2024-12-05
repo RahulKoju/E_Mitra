@@ -126,7 +126,7 @@ function MyOrder() {
                           <span className="font-semibold mr-2">
                             Order Date:
                           </span>
-                          {dayjs(order.createdAt).format("YYYY-MM-DD")}
+                          {dayjs(order.createdAt).format("YY-MMM-DD h:mm A")}
                         </div>
                         <div>
                           <span className="font-semibold mr-2">
