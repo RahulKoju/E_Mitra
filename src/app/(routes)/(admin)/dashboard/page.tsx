@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PendingOrderTable from "./_components/PendingOrderTable";
 import Analytics from "./Analytics";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type ProductImage = {
   url: string;
@@ -98,6 +100,9 @@ function Dashboard() {
           Admin Dashboard
         </h1>
         <div className="flex items-center space-x-2 text-gray-600">
+          <Link href={"/dashboard/product-management"} className="mr-5">
+            <Button>Manage Products</Button>
+          </Link>
           <UserCog className="w-6 h-6" />
           <span className="text-sm font-medium">
             {user.username?.toLocaleUpperCase()}

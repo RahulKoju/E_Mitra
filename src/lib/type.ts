@@ -32,3 +32,21 @@ export const billingSchema = z.object({
   });
 
  export type BillingDetails = z.infer<typeof billingSchema>;
+
+ export const productSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  description: z
+    .string()
+    .min(10, { message: "Description must be at least 10 characters" }),
+  price: z.coerce
+    .number()
+    .min(0, { message: "Price must be a positive number" }),
+  slug: z
+    .string()
+    .min(2, { message: "Slug must be at least 2 characters" })
+    .regex(/^[a-z0-9-]+$/, {
+      message: "Slug must be lowercase, numbers, or hyphens",
+    }),  
+});
+
+export type ProductFormInputs = z.infer<typeof productSchema>;

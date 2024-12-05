@@ -10,6 +10,13 @@ type CartData = {
   };
 };
 
+type Category = {
+  id: number;
+  documentId: string;
+  name: string;
+  slug: string;
+};
+
 type ProductImage = {
   url: string;
 };
@@ -18,8 +25,11 @@ type Product = {
   id: number;
   documentId: string;
   name: string;
+  description: string;
+  slug: string;
   price: number;
   images: ProductImage[];
+  categories: Category[];
 };
 
 type CartItemResponse = {
@@ -225,6 +235,27 @@ const getAllOrders = (jwt: string): Promise<Order[]> =>
     )
     .then((res) => res.data.data);
 
+const deleteProduct = (productId: string, jwt: string | null) =>
+  axiosClient.delete(`/products/${productId}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+const createProduct = (data: Product, jwt: string | null) =>
+  axiosClient.post("/products", data, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+const updateProduct = (data: Product, jwt: string | null) =>
+  axiosClient.post(`/products/${data.documentId}`, data, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
 export default {
   getCategory,
   getCategoryList,
@@ -239,4 +270,7 @@ export default {
   createOrder,
   getMyOrders,
   getAllOrders,
+  deleteProduct,
+  createProduct,
+  updateProduct,
 };
