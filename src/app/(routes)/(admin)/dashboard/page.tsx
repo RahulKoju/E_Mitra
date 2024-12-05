@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import OrderTable from "./_components/OrderTable";
+import PendingOrderTable from "./_components/PendingOrderTable";
 
 type ProductImage = {
   url: string;
@@ -115,7 +115,7 @@ function Dashboard() {
         </CardContent>
       </Card>
 
-      <OrderTable orders={orders} orderLoading={orderLoading} />
+      <PendingOrderTable orders={orders} orderLoading={orderLoading} />
     </div>
   );
 }

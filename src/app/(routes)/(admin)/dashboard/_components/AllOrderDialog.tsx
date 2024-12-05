@@ -1,4 +1,5 @@
 import React from "react";
+import OrderTable from "./OrderTable";
 
 type ProductImage = {
   url: string;
@@ -30,12 +31,12 @@ type Order = {
   createdAt: string;
 };
 
-type OrderTableProps = {
-  orderList: Order[];
-};
-
-function AllOrderDialog({ orderList }: OrderTableProps) {
-  return <div>hi</div>;
+function AllOrderDialog({ orderList }: { orderList: Order[] }) {
+  return (
+    <div className="max-h-[70vh] overflow-x-auto">
+      <OrderTable orders={orderList} />
+    </div>
+  );
 }
 
 export default AllOrderDialog;
