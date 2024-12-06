@@ -47,6 +47,12 @@ export const billingSchema = z.object({
     .regex(/^[a-z0-9-]+$/, {
       message: "Slug must be lowercase, numbers, or hyphens",
     }),
+  categories: z.array(z.object({
+    id: z.number(),
+    documentId: z.string(),
+    name: z.string(),
+    slug: z.string(),
+  })).optional(),
 });
 
 export type ProductFormInputs = z.infer<typeof productSchema>;

@@ -218,6 +218,7 @@ function ProductManagement() {
                 price: currentProduct?.price,
                 description: currentProduct?.description,
                 slug: currentProduct?.slug,
+                categories: currentProduct?.categories,
               }
             : undefined
         }

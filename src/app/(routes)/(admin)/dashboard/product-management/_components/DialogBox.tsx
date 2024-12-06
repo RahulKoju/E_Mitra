@@ -1,14 +1,6 @@
 "use client";
-import React, { useEffect, useMemo } from "react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import GlobalAPI from "@/app/_utils/GlobalAPI";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -17,24 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ProductFormInputs, productSchema } from "@/lib/type";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Select } from "@radix-ui/react-select";
-
-type Product = ProductFormInputs & {
-  id: number;
-  documentId: string;
-  images: { url: string }[];
-  categories: {
-    id: number;
-    documentId: string;
-    name: string;
-    slug: string;
-  }[];
-};
+import { ProductFormInputs, productSchema } from "@/lib/type";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo, useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import MultiSelect from "./MultiSelect";
 
 type DialogBoxProps = {
   isOpen: boolean;
@@ -44,6 +25,13 @@ type DialogBoxProps = {
   onSubmit: (data: ProductFormInputs) => Promise<void>;
 };
 
+type Category = {
+  id: number;
+  documentId: string;
+  name: string;
+  slug: string;
+};
+
 function DialogBox({
   isOpen,
   onOpenChange,
@@ -51,27 +39,54 @@ function DialogBox({
   initialData,
   onSubmit,
 }: DialogBoxProps) {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const getCategoryList = async () => {
+    try {
+      const res = await GlobalAPI.getCategory();
+      setCategories(
+        res.data.data.map((cat: any) => ({
+          id: cat.id,
+          documentId: cat.documentId,
+          name: cat.name,
+          slug: cat.slug,
+        }))
+      );
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    }
+  };
+
+  useEffect(() => {
+    getCategoryList();
+  }, []);
+
   const defaultValues = useMemo(
     () => ({
       name: initialData?.name || "",
       price: initialData?.price || 0,
       description: initialData?.description || "",
       slug: initialData?.slug || "",
+      categories: initialData?.categories || [],
     }),
     [initialData]
   );
 
-  const form = useForm<ProductFormInputs>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ProductFormInputs>({
     resolver: zodResolver(productSchema),
     defaultValues,
   });
 
   useEffect(() => {
-    // Reset form with new values when dialog opens or initialData changes
-    form.reset(defaultValues);
-  }, [isOpen, mode, initialData, form.reset, defaultValues]);
+    reset(defaultValues);
+  }, [isOpen, mode, initialData, reset, defaultValues]);
 
-  const handleSubmit: SubmitHandler<ProductFormInputs> = async (data) => {
+  const onSubmitHandler: SubmitHandler<ProductFormInputs> = async (data) => {
     await onSubmit(data);
   };
 
@@ -89,91 +104,110 @@ function DialogBox({
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
-          >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter product name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-6">
+          {/* Product Name */}
+          <div>
+            <label className="block text-sm font-medium">Product Name</label>
+            <Input
+              placeholder="Enter product name"
+              {...register("name")}
+              className={errors.name ? "border-red-500" : ""}
             />
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name.message}</p>
+            )}
+          </div>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter product description"
-                      className="min-h-[120px] resize-y"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium">Description</label>
+            <Textarea
+              placeholder="Enter product description"
+              className={`min-h-[150px] resize-y ${
+                errors.description ? "border-red-500" : ""
+              }`}
+              {...register("description")}
             />
+            {errors.description && (
+              <p className="text-sm text-red-500">
+                {errors.description.message}
+              </p>
+            )}
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter product price"
-                        step="0.01"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Price */}
+            <div>
+              <label className="block text-sm font-medium">Price</label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="Enter product price"
+                {...register("price", { valueAsNumber: true })}
+                className={errors.price ? "border-red-500" : ""}
               />
-
-              <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <Input placeholder="product-slug" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {errors.price && (
+                <p className="text-sm text-red-500">{errors.price.message}</p>
+              )}
             </div>
 
-            <div className="flex justify-end space-x-2">
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                {mode === "add" ? "Add Product" : "Update Product"}
+            {/* Slug */}
+            <div>
+              <label className="block text-sm font-medium">Slug</label>
+              <Input
+                placeholder="product-slug"
+                {...register("slug")}
+                className={errors.slug ? "border-red-500" : ""}
+              />
+              {errors.slug && (
+                <p className="text-sm text-red-500">{errors.slug.message}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Categories</label>
+            <Controller
+              name="categories"
+              control={control}
+              render={({ field }) => (
+                <MultiSelect
+                  options={categories.map((cat) => ({
+                    value: cat.documentId,
+                    label: cat.name,
+                  }))}
+                  value={field.value?.map((cat) => cat.documentId) || []}
+                  onChange={(selectedValues) => {
+                    const selectedCategories = selectedValues.map(
+                      (value) =>
+                        categories.find((cat) => cat.documentId === value)!
+                    );
+                    field.onChange(selectedCategories);
+                  }}
+                  placeholder="Select categories"
+                />
+              )}
+            />
+            {errors.categories && (
+              <p className="text-sm text-red-500">
+                {errors.categories.message}
+              </p>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-2">
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
               </Button>
-            </div>
-          </form>
-        </Form>
+            </DialogClose>
+            <Button type="submit" className="bg-green-600 hover:bg-green-700">
+              {mode === "add" ? "Add Product" : "Update Product"}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
