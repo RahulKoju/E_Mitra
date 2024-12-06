@@ -46,7 +46,7 @@ export const billingSchema = z.object({
     .min(2, { message: "Slug must be at least 2 characters" })
     .regex(/^[a-z0-9-]+$/, {
       message: "Slug must be lowercase, numbers, or hyphens",
-    }),  
+    }),
 });
 
 export type ProductFormInputs = z.infer<typeof productSchema>;

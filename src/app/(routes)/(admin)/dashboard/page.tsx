@@ -6,7 +6,7 @@ import { LoaderCircle, UserCog } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PendingOrderTable from "./_components/PendingOrderTable";
-import Analytics from "./Analytics";
+import Analytics from "./_components/Analytics";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 

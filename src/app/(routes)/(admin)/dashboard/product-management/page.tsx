@@ -1,15 +1,12 @@
 "use client";
 import { useAuth } from "@/app/_context/AuthContext";
 import GlobalAPI from "@/app/_utils/GlobalAPI";
-
 import { Button } from "@/components/ui/button";
-
-import { ProductFormInputs, productSchema } from "@/lib/type";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { ProductFormInputs } from "@/lib/type";
 import { LoaderCircleIcon, PlusIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import DialogBox from "./_components/DialogBox";
 import ProductTable from "./_components/ProductTable";
 
 type Category = {
@@ -30,20 +27,20 @@ type Product = ProductFormInputs & {
   categories: Category[];
 };
 
+type CreateProductPayload = Omit<Product, "id" | "documentId" | "images"> & {
+  images?: ProductImage[];
+  categories?: Category[];
+};
+
 function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
+  const [currentProduct, setCurrentProduct] = useState<Product | undefined>(
+    undefined
+  );
   const { isLoggedIn, user, jwt } = useAuth();
-
-  const form = useForm<ProductFormInputs>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: 0,
-      slug: "",
-    },
-  });
 
   const getAllProducts = async () => {
     try {
@@ -65,7 +62,7 @@ function ProductManagement() {
       toast.success("Product deleted successfully", {
         description: "The product has been removed from your inventory.",
       });
-      getAllProducts();
+      await getAllProducts();
     } catch (err) {
       console.error("Failed to delete product:", err);
       toast.error("Failed to delete product", {
@@ -73,50 +70,76 @@ function ProductManagement() {
       });
     }
   };
-  const handleUpdateProduct = async (data: Product) => {
-    try {
-      await GlobalAPI.updateProduct(data, jwt);
-      toast.success("Product Updated", {
-        description: `${data.name} has been successfully updated.`,
-      });
-      getAllProducts();
-    } catch (err) {
-      console.error("Failed to update product:", err);
-      toast.error("Failed to update product", {
-        description: "Please try again later.",
-      });
-    }
-  };
-  const handleCreateProduct = async (data: Product) => {
-    try {
-      await GlobalAPI.createProduct(data, jwt);
-      toast.success("Product Added", {
-        description: `${data.name} has been added to your inventory.`,
-      });
-      getAllProducts();
-    } catch (err) {
-      console.error("Failed to add product:", err);
-      toast.error("Failed to add product", {
-        description: "Please try again later.",
-      });
-    }
+
+  const handleEditProductInitiate = (product: Product) => {
+    setDialogMode("edit");
+    setCurrentProduct(product);
+    setIsDialogOpen(true);
   };
 
-  const onSubmit: SubmitHandler<ProductFormInputs> = async (data) => {
+  const handleCreateProductInitiate = () => {
+    setDialogMode("add");
+    setCurrentProduct(undefined);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmitProduct = async (
+    data: ProductFormInputs
+  ): Promise<void> => {
     try {
-      form.reset();
-      getAllProducts();
+      if (dialogMode === "add") {
+        const productDataPayload: CreateProductPayload = {
+          ...data,
+          images: [],
+          categories: [],
+          slug: data.slug || data.name.toLowerCase().replace(/\s+/g, "-"),
+        };
+        await GlobalAPI.createProduct(productDataPayload, jwt);
+        toast.success("Product Added", {
+          description: `${data.name} has been added to your inventory.`,
+        });
+      } else {
+        // For edit mode, ensure we have the documentId
+        if (!currentProduct?.documentId) {
+          throw new Error("No product selected for editing");
+        }
+        const updatedProductPayload: Product = {
+          ...currentProduct,
+          name: data.name,
+          price: data.price,
+          description: data.description,
+          slug: data.slug || currentProduct.slug,
+        };
+        await GlobalAPI.updateProduct(updatedProductPayload, jwt);
+        toast.success("Product Updated", {
+          description: `${data.name} has been successfully updated.`,
+        });
+      }
+      setIsDialogOpen(false);
+      await getAllProducts();
     } catch (err) {
-      console.error("Failed to save product:", err);
-      toast.error("Failed to save product", {
-        description: "Please check your inputs and try again.",
-      });
+      console.error(
+        dialogMode === "add"
+          ? "Failed to add product:"
+          : "Failed to update product:",
+        err
+      );
+      toast.error(
+        dialogMode === "add"
+          ? "Failed to add product"
+          : "Failed to update product",
+        {
+          description: "Please check your inputs and try again.",
+        }
+      );
     }
   };
 
   useEffect(() => {
-    getAllProducts();
-  }, []);
+    if (isLoggedIn && user?.admin) {
+      getAllProducts();
+    }
+  }, [isLoggedIn, user?.admin]);
 
   if (!isLoggedIn || !user?.admin) {
     return (
@@ -152,7 +175,10 @@ function ProductManagement() {
       <div className="bg-white shadow-xl rounded-xl overflow-hidden">
         <div className="flex justify-between items-center p-6 bg-gradient-to-r from-green-500 to-emerald-600">
           <h1 className="text-3xl font-bold text-white">Product Management</h1>
-          <Button className="bg-white text-green-600 hover:bg-green-50">
+          <Button
+            onClick={handleCreateProductInitiate}
+            className="bg-white text-green-600 hover:bg-green-50"
+          >
             <PlusIcon className="mr-2 h-5 w-5" /> Add New Product
           </Button>
         </div>
@@ -174,10 +200,29 @@ function ProductManagement() {
             <ProductTable
               products={products}
               handleDeleteProduct={handleDeleteProduct}
+              handleEditProduct={handleEditProductInitiate}
             />
           </div>
         )}
       </div>
+
+      {/* Reusable Product Dialog */}
+      <DialogBox
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        mode={dialogMode}
+        initialData={
+          dialogMode === "edit"
+            ? {
+                name: currentProduct?.name,
+                price: currentProduct?.price,
+                description: currentProduct?.description,
+                slug: currentProduct?.slug,
+              }
+            : undefined
+        }
+        onSubmit={handleSubmitProduct}
+      />
     </div>
   );
 }

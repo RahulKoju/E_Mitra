@@ -46,9 +46,14 @@ type Product = {
 type ProductTableProp = {
   products: Product[];
   handleDeleteProduct: (documentId: string) => void;
+  handleEditProduct: (product: Product) => void;
 };
 
-function ProductTable({ products, handleDeleteProduct }: ProductTableProp) {
+function ProductTable({
+  products,
+  handleDeleteProduct,
+  handleEditProduct,
+}: ProductTableProp) {
   return (
     <div>
       <Table className="w-full border-spacing-0 border-collapse">
@@ -102,6 +107,7 @@ function ProductTable({ products, handleDeleteProduct }: ProductTableProp) {
               <TableCell className="text-right">
                 <div className="flex justify-end space-x-2">
                   <Button
+                    onClick={() => handleEditProduct(product)}
                     variant="outline"
                     size="icon"
                     className="hover:bg-green-50 hover:text-green-600"
