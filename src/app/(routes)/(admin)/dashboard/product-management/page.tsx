@@ -2,7 +2,7 @@
 import { useAuth } from "@/app/_context/AuthContext";
 import GlobalAPI from "@/app/_utils/GlobalAPI";
 import { Button } from "@/components/ui/button";
-import { ProductFormInputs } from "@/lib/type";
+import { ProductFormInputs, productSchema } from "@/lib/type";
 import { LoaderCircleIcon, PlusIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -25,11 +25,6 @@ type Product = ProductFormInputs & {
   documentId: string;
   images: ProductImage[];
   categories: Category[];
-};
-
-type CreateProductPayload = Omit<Product, "id" | "documentId" | "images"> & {
-  images?: ProductImage[];
-  categories?: Category[];
 };
 
 function ProductManagement() {
@@ -87,13 +82,27 @@ function ProductManagement() {
     data: ProductFormInputs
   ): Promise<void> => {
     try {
+      const validatedData = productSchema.parse(data);
       if (dialogMode === "add") {
-        const productDataPayload: CreateProductPayload = {
-          ...data,
-          images: [],
-          categories: [],
-          slug: data.slug || data.name.toLowerCase().replace(/\s+/g, "-"),
+        const productDataPayload = {
+          data: {
+            name: validatedData.name,
+            price: validatedData.price,
+            description: validatedData.description,
+            // categories: validatedData.categories?.map((cat) => ({
+            //   id: cat.id,
+            // })),
+            categories: data.categories,
+            images: [],
+            slug:
+              validatedData.slug ||
+              validatedData.name.toLowerCase().replace(/\s+/g, "-"),
+          },
         };
+        console.log(
+          "Sending Product Payload:",
+          JSON.stringify(productDataPayload, null, 2)
+        );
         await GlobalAPI.createProduct(productDataPayload, jwt);
         toast.success("Product Added", {
           description: `${data.name} has been added to your inventory.`,
@@ -103,14 +112,26 @@ function ProductManagement() {
         if (!currentProduct?.documentId) {
           throw new Error("No product selected for editing");
         }
-        const updatedProductPayload: Product = {
-          ...currentProduct,
-          name: data.name,
-          price: data.price,
-          description: data.description,
-          slug: data.slug || currentProduct.slug,
+
+        const updatedProductPayload = {
+          data: {
+            name: validatedData.name,
+            price: validatedData.price,
+            description: validatedData.description,
+            slug: validatedData.slug || currentProduct?.slug,
+            categories: validatedData.categories?.map((cat) => ({
+              id: cat.id,
+            })),
+            //categories: data.categories,
+            images: currentProduct.images,
+          },
         };
-        await GlobalAPI.updateProduct(updatedProductPayload, jwt);
+
+        await GlobalAPI.updateProduct(
+          currentProduct.documentId,
+          updatedProductPayload,
+          jwt
+        );
         toast.success("Product Updated", {
           description: `${data.name} has been successfully updated.`,
         });

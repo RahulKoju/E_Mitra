@@ -32,12 +32,15 @@ type Product = {
   categories: Category[];
 };
 
-type CreateProductPayload = Omit<
-  Product,
-  "id" | "documentId" | "images" | "categories"
-> & {
-  images?: ProductImage[];
-  categories?: Category[];
+type ProductPayload = {
+  data: {
+    name: string;
+    price: number;
+    description: string;
+    categories?: { id: number }[];
+    images?: { url?: string }[];
+    slug: string;
+  };
 };
 
 type CartItemResponse = {
@@ -250,27 +253,19 @@ const deleteProduct = (productId: string, jwt: string | null) =>
     },
   });
 
-const createProduct = (data: CreateProductPayload, jwt: string | null) =>
-  axiosClient.post(
-    "/products",
-    { data },
-    {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
-  );
+const createProduct = (data: ProductPayload, jwt: string | null) =>
+  axiosClient.post("/products", data, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
 
-const updateProduct = (data: Product, jwt: string | null) =>
-  axiosClient.put(
-    `/products/${data.documentId}`,
-    { data },
-    {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
-  );
+const updateProduct = (
+  productId: string,
+  data: ProductPayload,
+  jwt: string | null
+) =>
+  axiosClient.put(`/products/${productId}`, data, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
 
 export default {
   getCategory,
