@@ -89,20 +89,15 @@ function ProductManagement() {
             name: validatedData.name,
             price: validatedData.price,
             description: validatedData.description,
-            // categories: validatedData.categories?.map((cat) => ({
-            //   id: cat.id,
-            // })),
-            categories: data.categories,
-            images: [],
             slug:
               validatedData.slug ||
               validatedData.name.toLowerCase().replace(/\s+/g, "-"),
+            categories:
+              validatedData.categories?.map((cat) => cat.documentId) || [],
+            images: [],
           },
         };
-        console.log(
-          "Sending Product Payload:",
-          JSON.stringify(productDataPayload, null, 2)
-        );
+
         await GlobalAPI.createProduct(productDataPayload, jwt);
         toast.success("Product Added", {
           description: `${data.name} has been added to your inventory.`,
@@ -119,11 +114,8 @@ function ProductManagement() {
             price: validatedData.price,
             description: validatedData.description,
             slug: validatedData.slug || currentProduct?.slug,
-            categories: validatedData.categories?.map((cat) => ({
-              id: cat.id,
-            })),
-            //categories: data.categories,
-            images: currentProduct.images,
+            categories:
+              validatedData.categories?.map((cat) => cat.documentId) || [],
           },
         };
 
@@ -153,6 +145,7 @@ function ProductManagement() {
           description: "Please check your inputs and try again.",
         }
       );
+      throw err;
     }
   };
 

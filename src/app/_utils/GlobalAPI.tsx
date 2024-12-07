@@ -37,7 +37,7 @@ type ProductPayload = {
     name: string;
     price: number;
     description: string;
-    categories?: { id: number }[];
+    categories: string[];
     images?: { url?: string }[];
     slug: string;
   };

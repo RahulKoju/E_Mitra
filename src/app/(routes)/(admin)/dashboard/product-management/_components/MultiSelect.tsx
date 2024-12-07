@@ -11,6 +11,7 @@ type MultiSelectProps = {
   value: string[];
   onChange: (value: string[]) => void;
   placeholder?: string;
+  disabled: boolean;
 };
 
 export function MultiSelect({
@@ -18,6 +19,7 @@ export function MultiSelect({
   value,
   onChange,
   placeholder = "Select...",
+  disabled,
 }: MultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,13 +42,18 @@ export function MultiSelect({
   }, []);
 
   const toggleOption = (optionValue: string) => {
+    if (disabled) return; // Prevent changes when disabled
+
     const newValue = value.includes(optionValue)
       ? value.filter((v) => v !== optionValue)
       : [...value, optionValue];
+
     onChange(newValue);
   };
 
   const removeOption = (optionValue: string) => {
+    if (disabled) return; // Prevent changes when disabled
+
     onChange(value.filter((v) => v !== optionValue));
   };
 
@@ -55,34 +62,52 @@ export function MultiSelect({
   );
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div
+      ref={containerRef}
+      className={`relative w-full ${
+        disabled ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+    >
       <div
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex flex-wrap gap-2 items-center min-h-[40px] w-full border rounded-md px-3 py-2 cursor-pointer hover:border-gray-400"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`flex flex-wrap gap-2 items-center min-h-[40px] w-full border rounded-md px-3 py-2 
+          ${
+            disabled
+              ? "bg-gray-100 cursor-not-allowed"
+              : "cursor-pointer hover:border-gray-400"
+          }`}
       >
         {value.length === 0 ? (
-          <span className="text-gray-500">{placeholder}</span>
+          <span className={disabled ? "text-gray-500" : ""}>{placeholder}</span>
         ) : (
           selectedLabels.map((label, index) => (
             <div
               key={index}
-              className="flex items-center bg-green-100 text-green-800 rounded px-2 py-1 text-sm"
+              className="flex items-center bg-gray-200 rounded px-2 py-1 m-1"
             >
               {label}
-              <XIcon
-                className="ml-2 h-4 w-4 cursor-pointer hover:text-red-500"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeOption(value[index]);
-                }}
-              />
+              {!disabled && (
+                <XIcon
+                  className="ml-2 h-4 w-4 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeOption(value[index]);
+                  }}
+                />
+              )}
             </div>
           ))
         )}
-        <ChevronDownIcon className="ml-auto h-4 w-4 text-gray-500" />
+
+        {!disabled && (
+          <ChevronDownIcon
+            className={`ml-auto h-4 w-4 ${isOpen ? "rotate-180" : ""}`}
+          />
+        )}
       </div>
-      {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+
+      {isOpen && !disabled && (
+        <div className="absolute z-10 w-full mt-1 border rounded shadow-lg bg-white max-h-60 overflow-y-auto">
           {options.map((option) => (
             <div
               key={option.value}
@@ -94,13 +119,7 @@ export function MultiSelect({
                 value.includes(option.value) ? "bg-green-50" : ""
               }`}
             >
-              <input
-                type="checkbox"
-                checked={value.includes(option.value)}
-                readOnly
-                className="mr-2 cursor-pointer"
-              />
-              <span className="flex-grow">{option.label}</span>
+              {option.label}
             </div>
           ))}
         </div>

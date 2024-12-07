@@ -52,7 +52,7 @@ export const billingSchema = z.object({
     documentId: z.string(),
     name: z.string(),
     slug: z.string(),
-  })).optional(),
+  })).optional().default([]),
 });
 
 export type ProductFormInputs = z.infer<typeof productSchema>;

@@ -15,6 +15,7 @@ import { ProductFormInputs, productSchema } from "@/lib/type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { Loader2Icon } from "lucide-react";
 import MultiSelect from "./MultiSelect";
 
 type DialogBoxProps = {
@@ -40,6 +41,8 @@ function DialogBox({
   onSubmit,
 }: DialogBoxProps) {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const getCategoryList = async () => {
     try {
       const res = await GlobalAPI.getCategory();
@@ -84,10 +87,17 @@ function DialogBox({
 
   useEffect(() => {
     reset(defaultValues);
+    setIsSubmitting(false);
   }, [isOpen, mode, initialData, reset, defaultValues]);
 
   const onSubmitHandler: SubmitHandler<ProductFormInputs> = async (data) => {
-    await onSubmit(data);
+    setIsSubmitting(true);
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      setIsSubmitting(false);
+      throw error;
+    }
   };
 
   return (
@@ -111,6 +121,7 @@ function DialogBox({
             <Input
               placeholder="Enter product name"
               {...register("name")}
+              disabled={isSubmitting}
               className={errors.name ? "border-red-500" : ""}
             />
             {errors.name && (
@@ -127,6 +138,7 @@ function DialogBox({
                 errors.description ? "border-red-500" : ""
               }`}
               {...register("description")}
+              disabled={isSubmitting}
             />
             {errors.description && (
               <p className="text-sm text-red-500">
@@ -144,6 +156,7 @@ function DialogBox({
                 step="0.01"
                 placeholder="Enter product price"
                 {...register("price", { valueAsNumber: true })}
+                disabled={isSubmitting}
                 className={errors.price ? "border-red-500" : ""}
               />
               {errors.price && (
@@ -157,6 +170,7 @@ function DialogBox({
               <Input
                 placeholder="product-slug"
                 {...register("slug")}
+                disabled={isSubmitting}
                 className={errors.slug ? "border-red-500" : ""}
               />
               {errors.slug && (
@@ -186,6 +200,7 @@ function DialogBox({
                     field.onChange(selectedCategories);
                   }}
                   placeholder="Select categories"
+                  disabled={isSubmitting}
                 />
               )}
             />
@@ -199,12 +214,25 @@ function DialogBox({
           {/* Actions */}
           <div className="flex justify-end space-x-2">
             <DialogClose asChild>
-              <Button type="button" variant="outline">
+              <Button type="button" variant="outline" disabled={isSubmitting}>
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" className="bg-green-600 hover:bg-green-700">
-              {mode === "add" ? "Add Product" : "Update Product"}
+            <Button
+              type="submit"
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  {mode === "add" ? "Adding..." : "Updating..."}
+                </>
+              ) : mode === "add" ? (
+                "Add Product"
+              ) : (
+                "Update Product"
+              )}
             </Button>
           </div>
         </form>
