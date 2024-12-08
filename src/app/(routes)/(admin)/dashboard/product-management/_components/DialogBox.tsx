@@ -15,14 +15,18 @@ import { ProductFormInputs, productSchema } from "@/lib/type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { Loader2Icon } from "lucide-react";
+import { ImagePlusIcon, Loader2Icon } from "lucide-react";
 import MultiSelect from "./MultiSelect";
+import Image from "next/image";
+import { useAuth } from "@/app/_context/AuthContext";
 
 type DialogBoxProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   mode: "add" | "edit";
-  initialData?: Partial<ProductFormInputs>;
+  initialData?: Partial<ProductFormInputs> & {
+    images?: { url: string }[];
+  };
   onSubmit: (data: ProductFormInputs) => Promise<void>;
 };
 
@@ -40,9 +44,10 @@ function DialogBox({
   initialData,
   onSubmit,
 }: DialogBoxProps) {
+  const { jwt } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const getCategoryList = async () => {
     try {
       const res = await GlobalAPI.getCategory();
@@ -88,15 +93,52 @@ function DialogBox({
   useEffect(() => {
     reset(defaultValues);
     setIsSubmitting(false);
+    setSelectedImages([]);
   }, [isOpen, mode, initialData, reset, defaultValues]);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      const validImages = fileArray.filter((file) => {
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+          alert("Image size should not exceed 2MB");
+          return false;
+        }
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+          alert("Please upload only image files");
+          return false;
+        }
+        return true;
+      });
+
+      // Limit to first image if multiple were uploaded
+      setSelectedImages(validImages.slice(0, 1));
+    }
+  };
 
   const onSubmitHandler: SubmitHandler<ProductFormInputs> = async (data) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      const UploadedImageData = await GlobalAPI.uploadImage(
+        selectedImages,
+        jwt
+      );
+      console.log(UploadedImageData);
+      // Combine form data with images if any
+      const submissionData = {
+        ...data,
+        images: selectedImages,
+      };
+      //await onSubmit(submissionData);
+      // Reset form and close dialog on successful submission
+      reset();
+      onOpenChange(false);
     } catch (error) {
+      console.error("Submission error:", error);
       setIsSubmitting(false);
-      throw error;
     }
   };
 
@@ -208,6 +250,60 @@ function DialogBox({
               <p className="text-sm text-red-500">
                 {errors.categories.message}
               </p>
+            )}
+          </div>
+
+          {/* Image */}
+          <div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Product Images
+              </label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={isSubmitting}
+                  className="hidden"
+                  id="image-upload"
+                  onChange={handleImageUpload}
+                />
+                <label
+                  htmlFor="image-upload"
+                  className="flex items-center cursor-pointer px-4 py-2 bg-green-50 text-green-600 rounded-md hover:bg-green-100"
+                >
+                  <ImagePlusIcon className="mr-2 h-5 w-5" />
+                  Upload Images
+                </label>
+                <span className="text-sm text-gray-500">
+                  (Max 2MB per image, single image only)
+                </span>
+              </div>
+            </div>
+
+            {/* Display uploaded or existing images */}
+            {(selectedImages.length > 0 || initialData?.images) && (
+              <div className="mt-4 flex mx-2">
+                {selectedImages.length > 0 && (
+                  <Image
+                    src={URL.createObjectURL(selectedImages[0])}
+                    alt="Uploaded product"
+                    width={100}
+                    height={100}
+                    className="object-cover rounded"
+                  />
+                )}
+                {initialData?.images && !selectedImages.length && (
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}${initialData.images[0].url}`}
+                    alt="Product preview"
+                    width={100}
+                    height={100}
+                    className="object-cover rounded"
+                  />
+                )}
+              </div>
             )}
           </div>
 

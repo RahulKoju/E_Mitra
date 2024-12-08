@@ -233,6 +233,7 @@ function ProductManagement() {
                 description: currentProduct?.description,
                 slug: currentProduct?.slug,
                 categories: currentProduct?.categories,
+                images: currentProduct?.images,
               }
             : undefined
         }

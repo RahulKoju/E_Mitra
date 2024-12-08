@@ -267,6 +267,27 @@ const updateProduct = (
     headers: { Authorization: `Bearer ${jwt}` },
   });
 
+const uploadImage = async (file: File[], jwt: string | null) => {
+  const formData = new FormData();
+  formData.append("files", file[0]);
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Image upload failed:", error);
+    throw error;
+  }
+};
+
 export default {
   getCategory,
   getCategoryList,
@@ -284,4 +305,5 @@ export default {
   deleteProduct,
   createProduct,
   updateProduct,
+  uploadImage,
 };
