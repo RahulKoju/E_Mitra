@@ -10,7 +10,16 @@ type CartData = {
   };
 };
 
+type Category = {
+  id: number;
+  documentId: string;
+  name: string;
+  slug: string;
+};
+
 type ProductImage = {
+  id: number;
+  documentId: string;
   url: string;
 };
 
@@ -18,8 +27,22 @@ type Product = {
   id: number;
   documentId: string;
   name: string;
+  description: string;
+  slug: string;
   price: number;
   images: ProductImage[];
+  categories: Category[];
+};
+
+type ProductPayload = {
+  data: {
+    name: string;
+    price: number;
+    description: string;
+    categories: string[];
+    images?: { id?: number }[];
+    slug: string;
+  };
 };
 
 type CartItemResponse = {
@@ -65,11 +88,26 @@ type OrderItemDetails = {
   product: Product;
 };
 
+type Order = {
+  id: number;
+  address: string;
+  createdAt: string;
+  documentId: string;
+  email: string;
+  orderItemList: OrderItemDetails[];
+  phone_no: string;
+  totalOrderAmount: number;
+  userId: number;
+  username: string;
+  orderStatus: string;
+};
+
 type MyOrder = {
   id: string;
   totalOrderAmount: number;
   createdAt: string;
   orderItemList: OrderItemDetails[];
+  orderStatus: string;
 };
 
 type MyOrderResponse = {
@@ -77,6 +115,7 @@ type MyOrderResponse = {
   totalOrderAmount: number;
   createdAt: string;
   orderItemList: OrderItemDetails[];
+  orderStatus: string;
 };
 
 const axiosClient = axios.create({
@@ -191,10 +230,65 @@ const getMyOrders = (userId: number, jwt: string): Promise<MyOrder[]> =>
           totalOrderAmount: item.totalOrderAmount,
           createdAt: item.createdAt,
           orderItemList: item.orderItemList,
+          orderStatus: item.orderStatus,
         })
       );
       return orderList;
     });
+
+const getAllOrders = (jwt: string): Promise<Order[]> =>
+  axiosClient
+    .get<{ data: Order[] }>(
+      "/orders?populate[orderItemList][populate][product][populate]=images",
+      {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    )
+    .then((res) => res.data.data);
+
+const deleteProduct = (productId: string, jwt: string | null) =>
+  axiosClient.delete(`/products/${productId}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+const createProduct = (data: ProductPayload, jwt: string | null) =>
+  axiosClient.post("/products", data, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+
+const updateProduct = (
+  productId: string,
+  data: ProductPayload,
+  jwt: string | null
+) =>
+  axiosClient.put(`/products/${productId}`, data, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+
+const uploadImage = async (file: File[], jwt: string | null) => {
+  const formData = new FormData();
+  formData.append("files", file[0]);
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Image upload failed:", error);
+    throw error;
+  }
+};
 
 export default {
   getCategory,
@@ -209,4 +303,9 @@ export default {
   deleteCartItem,
   createOrder,
   getMyOrders,
+  getAllOrders,
+  deleteProduct,
+  createProduct,
+  updateProduct,
+  uploadImage,
 };

@@ -38,6 +38,7 @@ type MyOrder = {
   totalOrderAmount: number;
   createdAt: string;
   orderItemList: OrderItemDetails[];
+  orderStatus: string;
 };
 
 function MyOrder() {
@@ -125,7 +126,7 @@ function MyOrder() {
                           <span className="font-semibold mr-2">
                             Order Date:
                           </span>
-                          {dayjs(order.createdAt).format("YYYY-MM-DD")}
+                          {dayjs(order.createdAt).format("YY-MMM-DD h:mm A")}
                         </div>
                         <div>
                           <span className="font-semibold mr-2">
@@ -138,7 +139,7 @@ function MyOrder() {
                         <div>
                           <span className="font-semibold mr-2">Status:</span>
                           <span className="text-yellow-600 font-medium">
-                            PENDING
+                            {order.orderStatus}
                           </span>
                         </div>
                       </div>
