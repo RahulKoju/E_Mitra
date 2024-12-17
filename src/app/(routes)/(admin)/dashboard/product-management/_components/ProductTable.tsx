@@ -29,6 +29,8 @@ type Category = {
 };
 
 type ProductImage = {
+  id: number;
+  documentId: string;
   url: string;
 };
 

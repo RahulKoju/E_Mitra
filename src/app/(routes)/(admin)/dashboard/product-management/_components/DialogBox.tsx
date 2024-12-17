@@ -19,6 +19,7 @@ import { ImagePlusIcon, Loader2Icon } from "lucide-react";
 import MultiSelect from "./MultiSelect";
 import Image from "next/image";
 import { useAuth } from "@/app/_context/AuthContext";
+import { toast } from "sonner";
 
 type DialogBoxProps = {
   isOpen: boolean;
@@ -103,12 +104,12 @@ function DialogBox({
       const validImages = fileArray.filter((file) => {
         // Validate file size (max 2MB)
         if (file.size > 2 * 1024 * 1024) {
-          alert("Image size should not exceed 2MB");
+          toast.error("Image size should not exceed 2MB");
           return false;
         }
         // Validate file type
         if (!file.type.startsWith("image/")) {
-          alert("Please upload only image files");
+          toast.error("Please upload only image files");
           return false;
         }
         return true;
@@ -126,13 +127,12 @@ function DialogBox({
         selectedImages,
         jwt
       );
-      console.log(UploadedImageData);
-      // Combine form data with images if any
+      const imageId = UploadedImageData[0].id;
       const submissionData = {
         ...data,
-        images: selectedImages,
+        images: { id: imageId },
       };
-      //await onSubmit(submissionData);
+      await onSubmit(submissionData);
       // Reset form and close dialog on successful submission
       reset();
       onOpenChange(false);

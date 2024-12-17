@@ -17,7 +17,9 @@ type Category = {
 };
 
 type ProductImage = {
+  id: number;
   url: string;
+  documentId: string;
 };
 
 type Product = ProductFormInputs & {
@@ -94,10 +96,9 @@ function ProductManagement() {
               validatedData.name.toLowerCase().replace(/\s+/g, "-"),
             categories:
               validatedData.categories?.map((cat) => cat.documentId) || [],
-            images: [],
+            images: data.images.id,
           },
         };
-
         await GlobalAPI.createProduct(productDataPayload, jwt);
         toast.success("Product Added", {
           description: `${data.name} has been added to your inventory.`,
@@ -116,6 +117,7 @@ function ProductManagement() {
             slug: validatedData.slug || currentProduct?.slug,
             categories:
               validatedData.categories?.map((cat) => cat.documentId) || [],
+            images: data.images?.id,
           },
         };
 

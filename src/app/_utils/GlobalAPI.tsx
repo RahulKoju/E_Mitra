@@ -18,6 +18,8 @@ type Category = {
 };
 
 type ProductImage = {
+  id: number;
+  documentId: string;
   url: string;
 };
 
@@ -38,7 +40,7 @@ type ProductPayload = {
     price: number;
     description: string;
     categories: string[];
-    images?: { url?: string }[];
+    images?: { id?: number }[];
     slug: string;
   };
 };
