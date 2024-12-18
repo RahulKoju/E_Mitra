@@ -29,6 +29,17 @@ type Product = ProductFormInputs & {
   categories: Category[];
 };
 
+type ProductPayload = {
+  data: {
+    name: string;
+    price: number;
+    description: string;
+    slug: string;
+    categories: string[];
+    images?: { id: number }[];
+  };
+};
+
 function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -86,7 +97,7 @@ function ProductManagement() {
     try {
       const validatedData = productSchema.parse(data);
       if (dialogMode === "add") {
-        const productDataPayload = {
+        const productDataPayload: ProductPayload = {
           data: {
             name: validatedData.name,
             price: validatedData.price,
@@ -96,9 +107,12 @@ function ProductManagement() {
               validatedData.name.toLowerCase().replace(/\s+/g, "-"),
             categories:
               validatedData.categories?.map((cat) => cat.documentId) || [],
-            images: data.images.id,
+            images: validatedData.images
+              ? [{ id: validatedData.images.id }]
+              : undefined,
           },
         };
+
         await GlobalAPI.createProduct(productDataPayload, jwt);
         toast.success("Product Added", {
           description: `${data.name} has been added to your inventory.`,
@@ -117,7 +131,9 @@ function ProductManagement() {
             slug: validatedData.slug || currentProduct?.slug,
             categories:
               validatedData.categories?.map((cat) => cat.documentId) || [],
-            images: data.images?.id,
+            images: validatedData.images
+              ? [{ id: validatedData.images.id }]
+              : undefined,
           },
         };
 

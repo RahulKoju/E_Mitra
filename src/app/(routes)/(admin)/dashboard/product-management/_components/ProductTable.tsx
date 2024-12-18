@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { EditIcon, TrashIcon } from "lucide-react";
+import { ProductFormInputs } from "@/lib/type";
 
 type Category = {
   id: number;
@@ -34,13 +35,9 @@ type ProductImage = {
   url: string;
 };
 
-type Product = {
+type Product = ProductFormInputs & {
   id: number;
   documentId: string;
-  description: string;
-  slug: string;
-  name: string;
-  price: number;
   images: ProductImage[];
   categories: Category[];
 };

@@ -53,6 +53,11 @@ export const billingSchema = z.object({
     name: z.string(),
     slug: z.string(),
   })).optional().default([]),
+  images: z.object({
+    id: z.number(),
+    url: z.string().optional(),
+    documentId: z.string().optional(),
+  }).optional(),
 });
 
 export type ProductFormInputs = z.infer<typeof productSchema>;

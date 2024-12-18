@@ -26,7 +26,7 @@ type DialogBoxProps = {
   onOpenChange: (open: boolean) => void;
   mode: "add" | "edit";
   initialData?: Partial<ProductFormInputs> & {
-    images?: { url: string }[];
+    images?: { id: number; url: string }[];
   };
   onSubmit: (data: ProductFormInputs) => Promise<void>;
 };
@@ -123,15 +123,20 @@ function DialogBox({
   const onSubmitHandler: SubmitHandler<ProductFormInputs> = async (data) => {
     setIsSubmitting(true);
     try {
-      const UploadedImageData = await GlobalAPI.uploadImage(
-        selectedImages,
-        jwt
-      );
-      const imageId = UploadedImageData[0].id;
-      const submissionData = {
-        ...data,
-        images: { id: imageId },
-      };
+      let submissionData: any = { ...data };
+
+      // Only upload image if new image is selected
+      if (selectedImages.length > 0) {
+        const UploadedImageData = await GlobalAPI.uploadImage(
+          selectedImages,
+          jwt
+        );
+        submissionData.images = { id: UploadedImageData[0].id };
+      } else if (mode === "edit" && initialData?.images) {
+        // For edit mode, keep existing image if no new image is uploaded
+        submissionData.images = { id: initialData.images[0].id };
+      }
+
       await onSubmit(submissionData);
       // Reset form and close dialog on successful submission
       reset();
@@ -139,6 +144,7 @@ function DialogBox({
     } catch (error) {
       console.error("Submission error:", error);
       setIsSubmitting(false);
+      toast.error("Failed to submit product. Please try again.");
     }
   };
 
@@ -271,7 +277,11 @@ function DialogBox({
                 />
                 <label
                   htmlFor="image-upload"
-                  className="flex items-center cursor-pointer px-4 py-2 bg-green-50 text-green-600 rounded-md hover:bg-green-100"
+                  className={`flex items-center px-4 py-2 rounded-md cursor-pointer ${
+                    isSubmitting
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-green-50 text-green-600 hover:bg-green-100"
+                  }`}
                 >
                   <ImagePlusIcon className="mr-2 h-5 w-5" />
                   Upload Images
