@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { usePathname } from "next/navigation";
 import { UpdateCartProvider } from "./_context/UpdateCartContext";
 import { AuthProvider } from "./_context/AuthContext";
+import Providers from "./Providers";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,14 +38,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <UpdateCartProvider>
-            {show && <Header />}
-            {children}
-            <Toaster />
-            {show && <Footer />}
-          </UpdateCartProvider>
-        </AuthProvider>
+        <Providers>
+          <AuthProvider>
+            <UpdateCartProvider>
+              {show && <Header />}
+              {children}
+              <Toaster />
+              {show && <Footer />}
+            </UpdateCartProvider>
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

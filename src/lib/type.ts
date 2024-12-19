@@ -61,3 +61,121 @@ export const billingSchema = z.object({
 });
 
 export type ProductFormInputs = z.infer<typeof productSchema>;
+
+export type CartData = {
+  data: {
+    quantity: number;
+    amount: number;
+    products: string;
+    users_permissions_user: number;
+    userId: number;
+  };
+};
+
+export type Category = {
+  id: number;
+  documentId: string;
+  name: string;
+  slug: string;
+};
+
+export type ProductImage = {
+  id: number;
+  documentId: string;
+  url: string;
+};
+
+export type Product = {
+  id: number;
+  documentId: string;
+  name: string;
+  description: string;
+  slug: string;
+  price: number;
+  images: ProductImage[];
+  categories: Category[];
+};
+
+export type ProductPayload = {
+  data: {
+    name: string;
+    price: number;
+    description: string;
+    categories: string[];
+    images?: { id: number }[];
+    slug: string;
+  };
+};
+
+export type CartItemResponse = {
+  id: number;
+  documentId: string;
+  quantity: number;
+  amount: number;
+  products: Product[];
+};
+
+export type CartItemViewModel = {
+  name: string;
+  quantity: number;
+  amount: number;
+  image: string;
+  actualPrice: number;
+  id: string;
+  product: string;
+};
+
+export type OrderItem = {
+  amount: number;
+  quantity: number;
+  product: string;
+};
+
+export type OrderPayload = {
+  data: {
+    username: string;
+    email: string;
+    address: string;
+    phone_no: number;
+    totalOrderAmount: number;
+    userId: number;
+    orderItemList: OrderItem[];
+  };
+};
+
+export type OrderItemDetails = {
+  id: number;
+  quantity: number;
+  amount: number;
+  product: Product;
+};
+
+export type Order = {
+  id: number;
+  address: string;
+  createdAt: string;
+  documentId: string;
+  email: string;
+  orderItemList: OrderItemDetails[];
+  phone_no: string;
+  totalOrderAmount: number;
+  userId: number;
+  username: string;
+  orderStatus: string;
+};
+
+export type MyOrder = {
+  id: string;
+  totalOrderAmount: number;
+  createdAt: string;
+  orderItemList: OrderItemDetails[];
+  orderStatus: string;
+};
+
+export type MyOrderResponse = {
+  documentId: string;
+  totalOrderAmount: number;
+  createdAt: string;
+  orderItemList: OrderItemDetails[];
+  orderStatus: string;
+};
