@@ -1,14 +1,6 @@
+import { CartItemViewModel } from "@/lib/type";
 import { Trash2Icon } from "lucide-react";
 import Image from "next/image";
-
-type CartItemViewModel = {
-  name: string;
-  quantity: number;
-  amount: number;
-  image: string;
-  actualPrice: number;
-  id: string;
-};
 
 type CartItemListProp = {
   cartItemList: CartItemViewModel[];

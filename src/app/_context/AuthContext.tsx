@@ -9,6 +9,7 @@ import React, {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import GlobalAPI from "@/app/_utils/GlobalAPI";
+import { useLoginUser, useRegisterUser } from "../_utils/tanstackQuery";
 
 type User = {
   id: number;
@@ -35,6 +36,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [jwt, setJwt] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
+  const loginMutation = useLoginUser();
+  const registerMutation = useRegisterUser();
 
   // Load initial auth state from session storage
   useEffect(() => {
@@ -59,7 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   // Sign In method
   const signIn = async (email: string, password: string) => {
     try {
-      const res = await GlobalAPI.loginUser(email, password);
+      const res = await loginMutation.mutateAsync({ email, password });
       const userData = res.data.user;
       const token = res.data.jwt;
 
@@ -84,7 +87,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   // Sign Up method
   const signUp = async (username: string, email: string, password: string) => {
     try {
-      const res = await GlobalAPI.registerUser(username, email, password);
+      const res = await registerMutation.mutateAsync({
+        username,
+        email,
+        password,
+      });
       const userData = res.data.user;
       const token = res.data.jwt;
 

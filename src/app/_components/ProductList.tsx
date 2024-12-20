@@ -1,23 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import ProductItem from "./ProductItem";
-
-type Product = {
-  id: number;
-  documentId: string;
-  name: string;
-  description: string;
-  price: number;
-  images: Array<{
-    url: string;
-  }>;
-  slug: string;
-  categories: Array<{
-    id: number;
-    name: string;
-    slug: string;
-  }>;
-};
+import { Product } from "@/lib/type";
 
 type ProductListProps = {
   productList: Product[];

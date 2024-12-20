@@ -1,29 +1,14 @@
 "use client";
+import { Product } from "@/lib/type";
 import { LoaderCircleIcon, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "../_context/AuthContext";
 import { useUpdateCart } from "../_context/UpdateCartContext";
-import GlobalAPI from "../_utils/GlobalAPI";
-
-type Product = {
-  id: number;
-  documentId: string;
-  name: string;
-  description: string;
-  price: number;
-  images: Array<{
-    url: string;
-  }>;
-  slug: string;
-  categories: Array<{
-    id: number;
-    name: string;
-    slug: string;
-  }>;
-};
+import { useAddToCart } from "../_utils/tanstackQuery";
 
 type ProductItemProps = {
   product: Product;
@@ -31,13 +16,11 @@ type ProductItemProps = {
 
 function ProductItemDetail({ product }: ProductItemProps) {
   const [quantity, setQuantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const { incrementCart } = useUpdateCart();
   const totalPrice = quantity * product.price;
-  const jwt = sessionStorage.getItem("token");
-  const userString = sessionStorage.getItem("user");
-  const user = userString ? JSON.parse(userString) : null;
+  const { jwt, user } = useAuth();
   const router = useRouter();
+  const { mutate: addToCartMutation, isPending } = useAddToCart();
 
   const handleIncrement = () => {
     setQuantity((prev) => Math.min(prev + 1, 20));
@@ -48,8 +31,7 @@ function ProductItemDetail({ product }: ProductItemProps) {
   };
 
   const addToCart = async () => {
-    setIsLoading(true);
-    if (!jwt) {
+    if (!jwt || !user) {
       router.push("/sign-in");
       return;
     }
@@ -62,21 +44,24 @@ function ProductItemDetail({ product }: ProductItemProps) {
         userId: user.id,
       },
     };
-    try {
-      await GlobalAPI.addToCart(data, jwt);
-      toast.success("Added to cart successfully");
-      incrementCart();
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message || "Failed to add item to cart");
-      } else if (typeof error === "string") {
-        toast.error(error);
-      } else {
-        toast.error("Failed to add item to cart");
+    addToCartMutation(
+      { data, jwt },
+      {
+        onSuccess: () => {
+          toast.success("Added to cart successfully");
+          incrementCart();
+        },
+        onError: (error: unknown) => {
+          if (error instanceof Error) {
+            toast.error(error.message || "Failed to add item to cart");
+          } else if (typeof error === "string") {
+            toast.error(error);
+          } else {
+            toast.error("Failed to add item to cart");
+          }
+        },
       }
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
 
   return (
@@ -145,10 +130,10 @@ function ProductItemDetail({ product }: ProductItemProps) {
             {/* Add to Cart Button */}
             <button
               onClick={addToCart}
-              disabled={isLoading}
+              disabled={isPending}
               className="flex items-center justify-center w-full bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 active:bg-green-800 transform active:scale-[0.98] transition-all duration-200 shadow-sm hover:shadow"
             >
-              {isLoading ? (
+              {isPending ? (
                 <LoaderCircleIcon className="animate-spin" />
               ) : (
                 "Add to Cart"

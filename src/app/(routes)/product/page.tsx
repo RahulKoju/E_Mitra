@@ -1,49 +1,10 @@
 "use client";
 import ProductItem from "@/app/_components/ProductItem";
-import GlobalAPI from "@/app/_utils/GlobalAPI";
+import { useAllProducts } from "@/app/_utils/tanstackQuery";
 import { LoaderCircleIcon } from "lucide-react";
-import React, { useEffect, useState } from "react";
-
-type Product = {
-  id: number;
-  documentId: string;
-  name: string;
-  description: string;
-  price: number;
-  images: Array<{
-    url: string;
-  }>;
-  slug: string;
-  categories: Array<{
-    id: number;
-    name: string;
-    slug: string;
-  }>;
-};
 
 function Product() {
-  const [productList, setProductList] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const getProducts = async () => {
-    try {
-      setIsLoading(true);
-      const data = await GlobalAPI.getAllProducts();
-      setProductList(data);
-      setError(null);
-    } catch (err) {
-      console.error("Failed to fetch products:", err);
-      setError("Failed to load products. Please try again later.");
-      setProductList([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getProducts();
-  }, []);
+  const { data: products, error, isLoading } = useAllProducts();
 
   if (isLoading) {
     return (
@@ -54,7 +15,6 @@ function Product() {
     );
   }
 
-  // Render error state
   if (error) {
     return (
       <div
@@ -62,19 +22,14 @@ function Product() {
         role="alert"
       >
         <strong className="font-bold">Oops! </strong>
-        <span className="block sm:inline">{error}</span>
-        <button
-          onClick={getProducts}
-          className="ml-4 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded"
-        >
-          Retry
-        </button>
+        <span className="block sm:inline">
+          {error instanceof Error ? error.message : "An error occurred"}
+        </span>
       </div>
     );
   }
 
-  // Render empty state if no products
-  if (productList.length === 0) {
+  if (!products || products.length === 0) {
     return (
       <div className="text-center py-10">
         <h2 className="text-green-600 font-bold text-2xl mb-4">
@@ -91,7 +46,7 @@ function Product() {
         Our Popular Products
       </h2>
 
-      <ProductItem products={productList} />
+      <ProductItem products={products} />
     </div>
   );
 }

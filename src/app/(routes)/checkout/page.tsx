@@ -3,7 +3,12 @@ import { useAuth } from "@/app/_context/AuthContext";
 import { useUpdateCart } from "@/app/_context/UpdateCartContext";
 import GlobalAPI from "@/app/_utils/GlobalAPI";
 import { Input } from "@/components/ui/input";
-import { BillingDetails, billingSchema } from "@/lib/type";
+import {
+  BillingDetails,
+  billingSchema,
+  CartItemViewModel,
+  OrderPayload,
+} from "@/lib/type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CreditCard,
@@ -17,34 +22,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-type CartItemViewModel = {
-  name: string;
-  quantity: number;
-  amount: number;
-  image: string;
-  actualPrice: number;
-  id: string;
-  product: string;
-};
-
-type OrderItem = {
-  amount: number;
-  quantity: number;
-  product: string;
-};
-
-type OrderPayload = {
-  data: {
-    username: string;
-    email: string;
-    address: string;
-    phone_no: number;
-    totalOrderAmount: number;
-    userId: number;
-    orderItemList: OrderItem[];
-  };
-};
 
 function Checkout() {
   const [cartItemList, setCartItemList] = useState<CartItemViewModel[]>([]);

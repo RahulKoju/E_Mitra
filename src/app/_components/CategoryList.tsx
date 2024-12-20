@@ -1,10 +1,5 @@
+import { Category } from "@/lib/type";
 import Link from "next/link";
-
-type Category = {
-  id: number;
-  name: string;
-  slug: string;
-};
 
 type CategoryListProps = {
   categoryList: Category[];

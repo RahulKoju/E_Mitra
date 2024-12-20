@@ -18,7 +18,6 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUpdateCart } from "../_context/UpdateCartContext";
-import GlobalAPI from "../_utils/GlobalAPI";
 
 import {
   Sheet,
@@ -29,73 +28,51 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import CartItemList from "./CartItemList";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useAuth } from "../_context/AuthContext";
+import { useDeleteCartItem, useUserCartItems } from "../_utils/tanstackQuery";
+import CartItemList from "./CartItemList";
 import Category from "./Category";
 import NavMenu from "./NavMenu";
 
-type CartItemViewModel = {
-  name: string;
-  quantity: number;
-  amount: number;
-  image: string;
-  actualPrice: number;
-  id: string;
-};
-
 function Header() {
-  const [itemCount, setItemCount] = useState(0);
   const { isLoggedIn, user, jwt, logout } = useAuth();
   const { updateCart, decrementCart } = useUpdateCart();
-  const [cartItemList, setCartItemList] = useState<CartItemViewModel[]>([]);
   const [subTotal, setSubTotal] = useState(0);
   const router = useRouter();
 
+  const { data: cartItem = [] } = useUserCartItems(
+    isLoggedIn && user?.id ? user.id : null,
+    jwt
+  );
+
+  const { mutate: deleteCartItem } = useDeleteCartItem();
+
   const signOut = () => {
     logout();
-    setItemCount(0);
-    setCartItemList([]);
-    setSubTotal(0);
-  };
-
-  const getItemCount = async () => {
-    if (user && jwt) {
-      try {
-        const userCartItemList: CartItemViewModel[] =
-          await GlobalAPI.getUserCartItems(user.id, jwt);
-        setItemCount(userCartItemList.length);
-        setCartItemList(userCartItemList);
-      } catch (error) {
-        console.error("Error fetching cart items", error);
-        setItemCount(0);
-        setCartItemList([]);
-      }
-    }
   };
 
   const onDeleteCartItem = (id: string) => {
-    GlobalAPI.deleteCartItem(id, jwt).then((res) => {
-      toast("Item removed!");
-      decrementCart();
-      getItemCount();
-    });
+    if (!jwt) return;
+    deleteCartItem(
+      { id, jwt },
+      {
+        onSuccess: () => {
+          toast("Item removed");
+          decrementCart();
+        },
+      }
+    );
   };
 
   useEffect(() => {
     let total = 0;
-    cartItemList.forEach((e) => {
+    cartItem.forEach((e) => {
       total += e.amount;
     });
     setSubTotal(total);
-  }, [cartItemList]);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      getItemCount();
-    }
-  }, [isLoggedIn, updateCart]);
+  }, [cartItem]);
 
   return (
     <div className="shadow-md">
@@ -116,7 +93,7 @@ function Header() {
                   <div className="pt-2">
                     <ShoppingCart className="h-6 w-6" />
                     <span className="absolute top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                      {itemCount}
+                      {cartItem.length}
                     </span>
                   </div>
                 </SheetTrigger>
@@ -130,13 +107,13 @@ function Header() {
                     </SheetDescription>
                     <div>
                       <CartItemList
-                        cartItemList={cartItemList}
+                        cartItemList={cartItem}
                         onDeleteItem={onDeleteCartItem}
                       />
                     </div>
                   </SheetHeader>
                   <SheetClose asChild>
-                    {cartItemList.length > 0 ? (
+                    {cartItem.length > 0 ? (
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <div className="flex justify-between items-center mb-4">
                           <span className="text-lg font-bold text-gray-800">

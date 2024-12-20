@@ -9,23 +9,7 @@ import {
 import Image from "next/image";
 import ProductItemDetail from "./ProductItemDetail";
 import Link from "next/link";
-
-type Product = {
-  id: number;
-  documentId: string;
-  name: string;
-  description: string;
-  price: number;
-  images: Array<{
-    url: string;
-  }>;
-  slug: string;
-  categories: Array<{
-    id: number;
-    name: string;
-    slug: string;
-  }>;
-};
+import { Product } from "@/lib/type";
 
 type ProductItemProps = {
   products: Product[];

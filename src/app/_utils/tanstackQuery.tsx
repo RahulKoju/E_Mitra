@@ -85,10 +85,13 @@ export const useAddToCart = () => {
   });
 };
 
-export const useUserCartItems = (userId: number, jwt: string) => {
+export const useUserCartItems = (userId: number | null, jwt: string | null) => {
   return useQuery<CartItemViewModel[]>({
     queryKey: ["cartItems", userId],
-    queryFn: () => GlobalAPI.getUserCartItems(userId, jwt),
+    queryFn: () => {
+      if (!userId || !jwt) return Promise.resolve([]);
+      return GlobalAPI.getUserCartItems(userId, jwt);
+    },
     enabled: !!userId && !!jwt,
   });
 };
