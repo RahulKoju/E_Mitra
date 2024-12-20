@@ -1,51 +1,31 @@
 "use client";
-import GlobalAPI from "@/app/_utils/GlobalAPI";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useAuth } from "@/app/_context/AuthContext";
+import { useMyOrders } from "@/app/_utils/tanstackQuery";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import dayjs from "dayjs";
+import { LoaderCircleIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import MyOrderItem from "./_component/MyOrderItem";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/app/_context/AuthContext";
-import { LoaderCircleIcon } from "lucide-react"; // Importing loader icon
-
-type ProductImage = {
-  url: string;
-};
-
-type Product = {
-  id: number;
-  documentId: string;
-  name: string;
-  price: number;
-  images: ProductImage[];
-};
-
-type OrderItemDetails = {
-  id: number;
-  quantity: number;
-  amount: number;
-  product: Product;
-};
-
-type MyOrder = {
-  id: string;
-  totalOrderAmount: number;
-  createdAt: string;
-  orderItemList: OrderItemDetails[];
-  orderStatus: string;
-};
 
 function MyOrder() {
-  const { isLoggedIn, user, jwt } = useAuth();
-  const [orderList, setOrderList] = useState<MyOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { user, jwt } = useAuth();
+  const { data: myOrders = [], isLoading } = useMyOrders(
+    user?.id ? user.id : null,
+    jwt
+  );
+  const sortedOrders = useMemo(() => {
+    return [...myOrders].sort((a, b) =>
+      dayjs(b.createdAt).diff(dayjs(a.createdAt))
+    );
+  }, [myOrders]);
 
   const checkAuthentication = () => {
     const token = sessionStorage.getItem("token") || "";
@@ -68,36 +48,9 @@ function MyOrder() {
     }
   };
 
-  const getMyOrders = async () => {
-    setIsLoading(true);
-    try {
-      if (user && jwt) {
-        const userOrderList: MyOrder[] = await GlobalAPI.getMyOrders(
-          user.id,
-          jwt
-        );
-        const sortedOrders = userOrderList.sort((a, b) =>
-          dayjs(b.createdAt).diff(dayjs(a.createdAt))
-        );
-        setOrderList(sortedOrders);
-      }
-    } catch (error) {
-      console.error("Error fetching orders", error);
-      toast.error("Failed to load orders. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
     checkAuthentication();
-  }, []);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      getMyOrders();
-    }
-  }, [isLoggedIn]);
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -114,9 +67,9 @@ function MyOrder() {
           <div className="flex justify-center items-center py-12">
             <LoaderCircleIcon className="animate-spin text-green-500 h-10 w-10" />
           </div>
-        ) : orderList.length > 0 ? (
+        ) : myOrders.length > 0 ? (
           <div className="space-y-4">
-            {orderList.map((order, index) => (
+            {myOrders.map((order, index) => (
               <Collapsible key={order.id}>
                 <CollapsibleTrigger asChild>
                   <div className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden">

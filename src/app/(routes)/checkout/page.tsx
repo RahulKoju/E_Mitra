@@ -1,14 +1,13 @@
 "use client";
 import { useAuth } from "@/app/_context/AuthContext";
 import { useUpdateCart } from "@/app/_context/UpdateCartContext";
-import GlobalAPI from "@/app/_utils/GlobalAPI";
-import { Input } from "@/components/ui/input";
 import {
-  BillingDetails,
-  billingSchema,
-  CartItemViewModel,
-  OrderPayload,
-} from "@/lib/type";
+  useCreateOrder,
+  useDeleteCartItem,
+  useUserCartItems,
+} from "@/app/_utils/tanstackQuery";
+import { Input } from "@/components/ui/input";
+import { BillingDetails, billingSchema, OrderPayload } from "@/lib/type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CreditCard,
@@ -19,20 +18,27 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 function Checkout() {
-  const [cartItemList, setCartItemList] = useState<CartItemViewModel[]>([]);
-  const [subTotal, setSubTotal] = useState(0);
-  const [itemCount, setItemCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingCart, setLoadingCart] = useState(false);
-  const { updateCart, resetCart } = useUpdateCart();
-  const { isLoggedIn, user, jwt } = useAuth();
+  const { resetCart } = useUpdateCart();
+  const { user, jwt } = useAuth();
   const router = useRouter();
 
+  const {
+    data: cartItems = [],
+    isLoading: isLoadingCart,
+    error: cartError,
+  } = useUserCartItems(user?.id ? user.id : null, jwt);
+
+  const { mutateAsync: deleteCartItem } = useDeleteCartItem();
+  const { mutateAsync: createOrder } = useCreateOrder();
+
+  const itemCount = cartItems.length;
+  const subTotal = cartItems.reduce((sum, item) => sum + item.amount, 0);
   const taxRate = 0.13; // 13% tax
   const tax = subTotal * taxRate;
   const total = subTotal + tax;
@@ -67,39 +73,6 @@ function Checkout() {
     }
   };
 
-  const getCartItems = async () => {
-    setLoadingCart(true);
-    if (user && jwt) {
-      try {
-        const orderItems: CartItemViewModel[] =
-          await GlobalAPI.getUserCartItems(user.id, jwt);
-        setCartItemList(orderItems);
-        setItemCount(orderItems.length);
-      } catch (error) {
-        console.error("Error fetching cart items", error);
-        setCartItemList([]);
-        setItemCount(0);
-      } finally {
-        setLoadingCart(false);
-      }
-    }
-  };
-
-  useEffect(() => {
-    checkAuthentication();
-  }, []);
-
-  useEffect(() => {
-    const total = cartItemList.reduce((sum, item) => sum + item.amount, 0);
-    setSubTotal(total);
-  }, [cartItemList]);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      getCartItems();
-    }
-  }, [isLoggedIn, updateCart]);
-
   const onSubmit = async (data: BillingDetails) => {
     setIsLoading(true);
     if (!checkAuthentication()) {
@@ -120,7 +93,7 @@ function Checkout() {
         phone_no: Number(data.phoneNo),
         totalOrderAmount: total,
         userId: user.id,
-        orderItemList: cartItemList.map((item) => ({
+        orderItemList: cartItems.map((item) => ({
           amount: item.amount,
           quantity: item.quantity,
           product: item.product,
@@ -128,15 +101,10 @@ function Checkout() {
       },
     };
     try {
-      await GlobalAPI.createOrder(payload, jwt);
-      // Delete cart items and update local state immediately
-      const deletePromises = cartItemList.map((item) =>
-        GlobalAPI.deleteCartItem(item.id, jwt)
+      await createOrder({ data: payload, jwt });
+      await Promise.all(
+        cartItems.map((item) => deleteCartItem({ id: item.id, jwt }))
       );
-      await Promise.all(deletePromises);
-      setCartItemList([]);
-      setItemCount(0);
-      setSubTotal(0);
       resetCart();
       toast.success("Order placed successfully!");
       reset();
@@ -148,6 +116,10 @@ function Checkout() {
       setIsLoading(false);
     }
   };
+
+  if (cartError) {
+    toast.error("Failed to load cart items. Please refresh the page.");
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen py-12">
@@ -285,11 +257,11 @@ function Checkout() {
               Order Summary ({itemCount})
             </h2>
 
-            {loadingCart ? (
+            {isLoadingCart ? (
               <div className="flex justify-center items-center py-12">
                 <LoaderCircleIcon className="animate-spin text-blue-600 h-12 w-12" />
               </div>
-            ) : cartItemList.length === 0 ? (
+            ) : cartItems.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <ShoppingCart
                   size={48}
@@ -300,7 +272,7 @@ function Checkout() {
             ) : (
               <div>
                 <div className="space-y-4 max-h-64 overflow-y-auto pr-2 mb-6">
-                  {cartItemList.map((item) => (
+                  {cartItems.map((item) => (
                     <div
                       key={item.id}
                       className="flex justify-between items-center border-b pb-3 last:border-b-0"
@@ -343,7 +315,7 @@ function Checkout() {
             <button
               type="submit"
               className="w-full bg-blue-600 text-white font-semibold py-4 rounded-lg hover:bg-blue-700 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-center items-center"
-              disabled={cartItemList.length === 0 || isLoading}
+              disabled={cartItems.length === 0 || isLoading}
             >
               {isLoading ? (
                 <LoaderCircleIcon className="animate-spin text-white h-6 w-6" />

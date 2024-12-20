@@ -1,4 +1,3 @@
-import React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,6 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -18,29 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Product } from "@/lib/type";
 import { EditIcon, TrashIcon } from "lucide-react";
-import { ProductFormInputs } from "@/lib/type";
-
-type Category = {
-  id: number;
-  documentId: string;
-  name: string;
-  slug: string;
-};
-
-type ProductImage = {
-  id: number;
-  documentId: string;
-  url: string;
-};
-
-type Product = ProductFormInputs & {
-  id: number;
-  documentId: string;
-  images: ProductImage[];
-  categories: Category[];
-};
 
 type ProductTableProp = {
   products: Product[];

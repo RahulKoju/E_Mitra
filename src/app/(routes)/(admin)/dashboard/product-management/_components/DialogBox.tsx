@@ -1,5 +1,9 @@
 "use client";
-import GlobalAPI from "@/app/_utils/GlobalAPI";
+import { useAuth } from "@/app/_context/AuthContext";
+import {
+  useCategories,
+  useProductManagement,
+} from "@/app/_utils/tanstackQuery";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,13 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ProductFormInputs, productSchema } from "@/lib/type";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ImagePlusIcon, Loader2Icon } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { ImagePlusIcon, Loader2Icon } from "lucide-react";
-import MultiSelect from "./MultiSelect";
-import Image from "next/image";
-import { useAuth } from "@/app/_context/AuthContext";
 import { toast } from "sonner";
+import MultiSelect from "./MultiSelect";
 
 type DialogBoxProps = {
   isOpen: boolean;
@@ -28,14 +31,8 @@ type DialogBoxProps = {
   initialData?: Partial<ProductFormInputs> & {
     images?: { id: number; url: string }[];
   };
-  onSubmit: (data: ProductFormInputs) => Promise<void>;
-};
-
-type Category = {
-  id: number;
-  documentId: string;
-  name: string;
-  slug: string;
+  onSuccess: () => void;
+  productId?: string;
 };
 
 function DialogBox({
@@ -43,31 +40,14 @@ function DialogBox({
   onOpenChange,
   mode,
   initialData,
-  onSubmit,
+  onSuccess,
+  productId,
 }: DialogBoxProps) {
   const { jwt } = useAuth();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: categories = [] } = useCategories();
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const getCategoryList = async () => {
-    try {
-      const res = await GlobalAPI.getCategory();
-      setCategories(
-        res.data.data.map((cat: any) => ({
-          id: cat.id,
-          documentId: cat.documentId,
-          name: cat.name,
-          slug: cat.slug,
-        }))
-      );
-    } catch (error) {
-      console.error("Failed to fetch categories:", error);
-    }
-  };
 
-  useEffect(() => {
-    getCategoryList();
-  }, []);
+  const { createProduct, updateProduct, uploadImage } = useProductManagement();
 
   const defaultValues = useMemo(
     () => ({
@@ -93,7 +73,6 @@ function DialogBox({
 
   useEffect(() => {
     reset(defaultValues);
-    setIsSubmitting(false);
     setSelectedImages([]);
   }, [isOpen, mode, initialData, reset, defaultValues]);
 
@@ -121,32 +100,64 @@ function DialogBox({
   };
 
   const onSubmitHandler: SubmitHandler<ProductFormInputs> = async (data) => {
-    setIsSubmitting(true);
     try {
-      let submissionData: any = { ...data };
+      let imageId: number | undefined;
 
       // Only upload image if new image is selected
       if (selectedImages.length > 0) {
-        const UploadedImageData = await GlobalAPI.uploadImage(
-          selectedImages,
-          jwt
-        );
-        submissionData.images = { id: UploadedImageData[0].id };
+        const UploadedImageData = await uploadImage.mutateAsync({
+          file: selectedImages,
+          jwt,
+        });
+        imageId = UploadedImageData[0].id;
       } else if (mode === "edit" && initialData?.images) {
-        // For edit mode, keep existing image if no new image is uploaded
-        submissionData.images = { id: initialData.images[0].id };
+        imageId = initialData.images[0].id;
       }
 
-      await onSubmit(submissionData);
+      const productPayload = {
+        data: {
+          name: data.name,
+          price: data.price,
+          description: data.description,
+          slug: data.slug || data.name.toLowerCase().replace(/\s+/g, "-"),
+          categories: data.categories?.map((cat) => cat.documentId) || [],
+          ...(imageId && { images: [{ id: imageId }] }),
+        },
+      };
+      if (mode === "add") {
+        await createProduct.mutateAsync({
+          data: productPayload,
+          jwt,
+        });
+        toast.success("Product Added", {
+          description: `${data.name} has been added to your inventory.`,
+        });
+      } else if (productId) {
+        await updateProduct.mutateAsync({
+          productId,
+          data: productPayload,
+          jwt,
+        });
+        toast.success("Product Updated", {
+          description: `${data.name} has been successfully updated.`,
+        });
+      }
       // Reset form and close dialog on successful submission
       reset();
+      onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Submission error:", error);
-      setIsSubmitting(false);
-      toast.error("Failed to submit product. Please try again.");
+      toast.error(
+        `Failed to ${
+          mode === "add" ? "add" : "update"
+        } product. Please try again.`
+      );
     }
   };
+
+  const isSubmitting =
+    createProduct.isPending || updateProduct.isPending || uploadImage.isPending;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -269,7 +280,7 @@ function DialogBox({
                 <Input
                   type="file"
                   accept="image/*"
-                  multiple
+                  multiple={false}
                   disabled={isSubmitting}
                   className="hidden"
                   id="image-upload"

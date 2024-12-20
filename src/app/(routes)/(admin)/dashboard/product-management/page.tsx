@@ -1,76 +1,33 @@
 "use client";
 import { useAuth } from "@/app/_context/AuthContext";
-import GlobalAPI from "@/app/_utils/GlobalAPI";
+import {
+  useAllProducts,
+  useProductManagement,
+} from "@/app/_utils/tanstackQuery";
 import { Button } from "@/components/ui/button";
-import { ProductFormInputs, productSchema } from "@/lib/type";
+import { Product } from "@/lib/type";
 import { LoaderCircleIcon, PlusIcon, XIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import DialogBox from "./_components/DialogBox";
 import ProductTable from "./_components/ProductTable";
 
-type Category = {
-  id: number;
-  documentId: string;
-  name: string;
-  slug: string;
-};
-
-type ProductImage = {
-  id: number;
-  url: string;
-  documentId: string;
-};
-
-type Product = ProductFormInputs & {
-  id: number;
-  documentId: string;
-  images: ProductImage[];
-  categories: Category[];
-};
-
-type ProductPayload = {
-  data: {
-    name: string;
-    price: number;
-    description: string;
-    slug: string;
-    categories: string[];
-    images?: { id: number }[];
-  };
-};
-
 function ProductManagement() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
   const [currentProduct, setCurrentProduct] = useState<Product | undefined>(
     undefined
   );
   const { isLoggedIn, user, jwt } = useAuth();
-
-  const getAllProducts = async () => {
-    try {
-      setIsLoading(true);
-      const data = await GlobalAPI.getAllProducts();
-      setProducts(data);
-    } catch (err) {
-      console.error("Failed to fetch products:", err);
-      toast.error("Failed to load products. Please try again later.");
-      setProducts([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { deleteProduct } = useProductManagement();
+  const { data: products = [], isLoading } = useAllProducts();
 
   const handleDeleteProduct = async (productId: string) => {
     try {
-      await GlobalAPI.deleteProduct(productId, jwt);
+      await deleteProduct.mutateAsync({ productId, jwt });
       toast.success("Product deleted successfully", {
         description: "The product has been removed from your inventory.",
       });
-      await getAllProducts();
     } catch (err) {
       console.error("Failed to delete product:", err);
       toast.error("Failed to delete product", {
@@ -90,88 +47,6 @@ function ProductManagement() {
     setCurrentProduct(undefined);
     setIsDialogOpen(true);
   };
-
-  const handleSubmitProduct = async (
-    data: ProductFormInputs
-  ): Promise<void> => {
-    try {
-      const validatedData = productSchema.parse(data);
-      if (dialogMode === "add") {
-        const productDataPayload: ProductPayload = {
-          data: {
-            name: validatedData.name,
-            price: validatedData.price,
-            description: validatedData.description,
-            slug:
-              validatedData.slug ||
-              validatedData.name.toLowerCase().replace(/\s+/g, "-"),
-            categories:
-              validatedData.categories?.map((cat) => cat.documentId) || [],
-            images: validatedData.images
-              ? [{ id: validatedData.images.id }]
-              : undefined,
-          },
-        };
-
-        await GlobalAPI.createProduct(productDataPayload, jwt);
-        toast.success("Product Added", {
-          description: `${data.name} has been added to your inventory.`,
-        });
-      } else {
-        // For edit mode, ensure we have the documentId
-        if (!currentProduct?.documentId) {
-          throw new Error("No product selected for editing");
-        }
-
-        const updatedProductPayload = {
-          data: {
-            name: validatedData.name,
-            price: validatedData.price,
-            description: validatedData.description,
-            slug: validatedData.slug || currentProduct?.slug,
-            categories:
-              validatedData.categories?.map((cat) => cat.documentId) || [],
-            images: validatedData.images
-              ? [{ id: validatedData.images.id }]
-              : undefined,
-          },
-        };
-
-        await GlobalAPI.updateProduct(
-          currentProduct.documentId,
-          updatedProductPayload,
-          jwt
-        );
-        toast.success("Product Updated", {
-          description: `${data.name} has been successfully updated.`,
-        });
-      }
-      setIsDialogOpen(false);
-      await getAllProducts();
-    } catch (err) {
-      console.error(
-        dialogMode === "add"
-          ? "Failed to add product:"
-          : "Failed to update product:",
-        err
-      );
-      toast.error(
-        dialogMode === "add"
-          ? "Failed to add product"
-          : "Failed to update product",
-        {
-          description: "Please check your inputs and try again.",
-        }
-      );
-      throw err;
-    }
-  };
-
-  useEffect(() => {
-    if (isLoggedIn && user?.admin) {
-      getAllProducts();
-    }
-  }, [isLoggedIn, user?.admin]);
 
   if (!isLoggedIn || !user?.admin) {
     return (
@@ -255,7 +130,10 @@ function ProductManagement() {
               }
             : undefined
         }
-        onSubmit={handleSubmitProduct}
+        onSuccess={() => {
+          // React Query will automatically handle the refetch
+        }}
+        productId={currentProduct?.documentId}
       />
     </div>
   );

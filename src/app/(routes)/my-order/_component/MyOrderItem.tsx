@@ -1,24 +1,6 @@
+import { OrderItemDetails } from "@/lib/type";
 import Image from "next/image";
 import React from "react";
-
-type ProductImage = {
-  url: string;
-};
-
-type Product = {
-  id: number;
-  documentId: string;
-  name: string;
-  price: number;
-  images: ProductImage[];
-};
-
-type OrderItemDetails = {
-  id: number;
-  quantity: number;
-  amount: number;
-  product: Product;
-};
 
 type MyOrderItemProps = {
   orderItem: OrderItemDetails;

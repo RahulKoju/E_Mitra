@@ -123,18 +123,24 @@ export const useCreateOrder = () => {
   });
 };
 
-export const useMyOrders = (userId: number, jwt: string) => {
+export const useMyOrders = (userId: number | null, jwt: string | null) => {
   return useQuery<MyOrder[]>({
     queryKey: ["myOrders", userId],
-    queryFn: () => GlobalAPI.getMyOrders(userId, jwt),
+    queryFn: () => {
+      if (!userId || !jwt) return Promise.resolve([]);
+      return GlobalAPI.getMyOrders(userId, jwt);
+    },
     enabled: !!userId && !!jwt,
   });
 };
 
-export const useAllOrders = (jwt: string) => {
+export const useAllOrders = (jwt: string | null) => {
   return useQuery<Order[]>({
     queryKey: ["allOrders"],
-    queryFn: () => GlobalAPI.getAllOrders(jwt),
+    queryFn: () => {
+      if (!jwt) return Promise.resolve([]);
+      return GlobalAPI.getAllOrders(jwt);
+    },
     enabled: !!jwt,
   });
 };

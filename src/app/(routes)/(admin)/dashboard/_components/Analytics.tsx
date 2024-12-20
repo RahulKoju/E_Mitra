@@ -17,39 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-type ProductImage = {
-  url: string;
-};
-
-type Product = {
-  id: number;
-  documentId: string;
-  name: string;
-  price: number;
-  images: ProductImage[];
-};
-
-type OrderItemDetails = {
-  id: number;
-  quantity: number;
-  amount: number;
-  product: Product;
-};
-
-type Order = {
-  id: number;
-  address: string;
-  createdAt: string;
-  documentId: string;
-  orderItemList: OrderItemDetails[];
-  email: string;
-  phone_no: string;
-  totalOrderAmount: number;
-  userId: number;
-  username: string;
-  orderStatus: string;
-};
+import { Order } from "@/lib/type";
 
 // Helper function to calculate metrics
 const calculateTotalMetrics = (processedOrderData: any[]) => {

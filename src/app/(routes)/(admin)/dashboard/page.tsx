@@ -1,68 +1,20 @@
 "use client";
 import { useAuth } from "@/app/_context/AuthContext";
-import GlobalAPI from "@/app/_utils/GlobalAPI";
+import { useAllOrders } from "@/app/_utils/tanstackQuery";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoaderCircle, UserCog } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import PendingOrderTable from "./_components/PendingOrderTable";
 import Analytics from "./_components/Analytics";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-
-type ProductImage = {
-  url: string;
-};
-
-type Product = {
-  id: number;
-  documentId: string;
-  name: string;
-  price: number;
-  images: ProductImage[];
-};
-
-type OrderItemDetails = {
-  id: number;
-  quantity: number;
-  amount: number;
-  product: Product;
-};
-
-type Order = {
-  id: number;
-  address: string;
-  createdAt: string;
-  documentId: string;
-  email: string;
-  orderItemList: OrderItemDetails[];
-  phone_no: string;
-  totalOrderAmount: number;
-  userId: number;
-  username: string;
-  orderStatus: string;
-};
+import PendingOrderTable from "./_components/PendingOrderTable";
 
 function Dashboard() {
   const { isLoggedIn, user, jwt } = useAuth();
   const router = useRouter();
-  const [orderLoading, setOrderLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [orders, setOrders] = useState<Order[]>([]);
-
-  const getAllOrders = async () => {
-    setOrderLoading(true);
-    try {
-      if (user?.admin && jwt) {
-        const orderList: Order[] = await GlobalAPI.getAllOrders(jwt);
-        setOrders(orderList);
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    } finally {
-      setOrderLoading(false);
-    }
-  };
+  const { data: allOrders = [], isLoading: isOrderLoading } = useAllOrders(jwt);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -74,12 +26,6 @@ function Dashboard() {
 
     return () => clearTimeout(timer);
   }, [isLoggedIn, user, router]);
-
-  useEffect(() => {
-    if (user?.admin) {
-      getAllOrders();
-    }
-  }, [user, jwt]);
 
   if (isLoading) {
     return (
@@ -146,13 +92,13 @@ function Dashboard() {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-700">
-                  {orders.length}
+                  {allOrders.length}
                 </div>
                 <div className="text-sm text-gray-600">Total Orders</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-700">
-                  {orders
+                  {allOrders
                     .reduce((sum, order) => sum + order.totalOrderAmount, 0)
                     .toFixed(2)}
                 </div>
@@ -164,8 +110,8 @@ function Dashboard() {
       </div>
 
       <div className="space-y-6">
-        <PendingOrderTable orders={orders} orderLoading={orderLoading} />
-        <Analytics orders={orders} />
+        <PendingOrderTable orders={allOrders} orderLoading={isOrderLoading} />
+        <Analytics orders={allOrders} />
       </div>
     </div>
   );
