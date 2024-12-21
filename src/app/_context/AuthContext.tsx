@@ -1,14 +1,13 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React, {
   createContext,
-  useState,
+  ReactNode,
   useContext,
   useEffect,
-  ReactNode,
+  useState,
 } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import GlobalAPI from "@/app/_utils/GlobalAPI";
 import { useLoginUser, useRegisterUser } from "../_utils/tanstackQuery";
 
 type User = {

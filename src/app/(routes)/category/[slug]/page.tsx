@@ -26,7 +26,7 @@ async function Category({ params }: Params) {
       <TopCategoryList categoryList={categoryList} selectedCategory={slug} />
 
       <div className="max-w-7xl mx-auto px-8">
-        <ProductList productList={productList} />
+        <ProductList />
       </div>
     </div>
   );

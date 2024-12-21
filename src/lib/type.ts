@@ -179,3 +179,9 @@ export type MyOrderResponse = {
   orderItemList: OrderItemDetails[];
   orderStatus: string;
 };
+
+export type SliderItem = {
+  image: Array<{
+    url: string;
+  }>;
+};

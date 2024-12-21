@@ -7,6 +7,7 @@ import {
   CartData,
   OrderPayload,
   ProductPayload,
+  SliderItem,
 } from "@/lib/type";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import GlobalAPI from "./GlobalAPI";
@@ -19,7 +20,7 @@ export const useCategories = () => {
 };
 
 export const useSliders = () => {
-  return useQuery({
+  return useQuery<SliderItem[]>({
     queryKey: ["sliders"],
     queryFn: GlobalAPI.getSlider,
   });
