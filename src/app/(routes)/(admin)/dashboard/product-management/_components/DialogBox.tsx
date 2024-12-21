@@ -15,7 +15,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ProductFormInputs, productSchema } from "@/lib/type";
+import {
+  Category,
+  ProductFormInputs,
+  ProductImage,
+  productSchema,
+} from "@/lib/type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ImagePlusIcon, Loader2Icon } from "lucide-react";
 import Image from "next/image";
@@ -28,8 +33,13 @@ type DialogBoxProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   mode: "add" | "edit";
-  initialData?: Partial<ProductFormInputs> & {
-    images?: { id: number; url: string }[];
+  initialData?: {
+    name?: string;
+    price?: number;
+    description?: string;
+    slug?: string;
+    categories?: Category[];
+    images?: ProductImage[];
   };
   onSuccess: () => void;
   productId?: string;
@@ -56,6 +66,13 @@ function DialogBox({
       description: initialData?.description || "",
       slug: initialData?.slug || "",
       categories: initialData?.categories || [],
+      images: initialData?.images
+        ? {
+            id: initialData.images[0]?.id || 0,
+            url: initialData.images[0]?.url || "",
+            documentId: initialData.images[0]?.documentId || "",
+          }
+        : undefined,
     }),
     [initialData]
   );
