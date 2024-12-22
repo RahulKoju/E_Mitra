@@ -2,12 +2,15 @@
 import { Product } from "@/lib/type";
 import { useState } from "react";
 import ProductItem from "./ProductItem";
+import { LoaderCircleIcon } from "lucide-react";
 
 type ProductListProps = {
   productList: Product[];
+  isLoading?: boolean;
+  error?: Error | null;
 };
 
-function ProductList({ productList }: ProductListProps) {
+function ProductList({ productList, isLoading, error }: ProductListProps) {
   const [visibleProducts, setVisibleProducts] = useState(8);
 
   const handleShowMore = () => {
@@ -17,28 +20,28 @@ function ProductList({ productList }: ProductListProps) {
   const displayedProducts = productList.slice(0, visibleProducts);
   const hasMoreProducts = visibleProducts < productList.length;
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex justify-center items-center h-64">
-  //       <LoaderCircleIcon className="animate-spin h-16 w-16 text-green-600" />
-  //       <span className="ml-3 text-green-600 text-xl">Loading products...</span>
-  //     </div>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <LoaderCircleIcon className="animate-spin h-16 w-16 text-green-600" />
+        <span className="ml-3 text-green-600 text-xl">Loading products...</span>
+      </div>
+    );
+  }
 
-  // if (error) {
-  //   return (
-  //     <div
-  //       className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-  //       role="alert"
-  //     >
-  //       <strong className="font-bold">Oops! </strong>
-  //       <span className="block sm:inline">
-  //         {error instanceof Error ? error.message : "An error occurred"}
-  //       </span>
-  //     </div>
-  //   );
-  // }
+  if (error) {
+    return (
+      <div
+        className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+        role="alert"
+      >
+        <strong className="font-bold">Oops! </strong>
+        <span className="block sm:inline">
+          {error instanceof Error ? error.message : "An error occurred"}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-8">

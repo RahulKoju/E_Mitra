@@ -13,8 +13,11 @@ interface CategoryClientProps {
 }
 
 const CategoryClient: React.FC<CategoryClientProps> = ({ slug }) => {
-  const { data: productList, isLoading: productsLoading } =
-    useProductsByCategory(slug);
+  const {
+    data: productList,
+    isLoading: productsLoading,
+    error: productsError,
+  } = useProductsByCategory(slug);
   const { data: categoryList, isLoading: categoriesLoading } = useCategories();
 
   const formatCategoryName = (slug: string) => {
@@ -44,7 +47,13 @@ const CategoryClient: React.FC<CategoryClientProps> = ({ slug }) => {
       )}
 
       <div className="max-w-7xl mx-auto px-8">
-        {productList && <ProductList productList={productList} />}
+        {productList && (
+          <ProductList
+            productList={productList}
+            isLoading={productsLoading}
+            error={productsError as Error | null}
+          />
+        )}
       </div>
     </div>
   );

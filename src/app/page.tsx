@@ -10,7 +10,11 @@ export default function Home() {
     <div className="max-w-screen-2xl mx-auto md:p-10 px-16 p-5 md:overflow-hidden">
       <Slider />
       <CategoryList />
-      <ProductList productList={products} />
+      <ProductList
+        productList={products}
+        isLoading={isLoading}
+        error={error as Error | null}
+      />
     </div>
   );
 }
