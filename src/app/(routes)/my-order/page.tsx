@@ -67,9 +67,9 @@ function MyOrder() {
           <div className="flex justify-center items-center py-12">
             <LoaderCircleIcon className="animate-spin text-green-500 h-10 w-10" />
           </div>
-        ) : myOrders.length > 0 ? (
+        ) : sortedOrders.length > 0 ? (
           <div className="space-y-4">
-            {myOrders.map((order, index) => (
+            {sortedOrders.map((order, index) => (
               <Collapsible key={order.id}>
                 <CollapsibleTrigger asChild>
                   <div className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden">

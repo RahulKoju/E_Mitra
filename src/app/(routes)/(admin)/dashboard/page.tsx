@@ -6,15 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoaderCircle, UserCog } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Analytics from "./_components/Analytics";
 import PendingOrderTable from "./_components/PendingOrderTable";
+import dayjs from "dayjs";
 
 function Dashboard() {
   const { isLoggedIn, user, jwt } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const { data: allOrders = [], isLoading: isOrderLoading } = useAllOrders(jwt);
+
+  const sortedOrders = useMemo(() => {
+    return [...allOrders].sort((a, b) =>
+      dayjs(b.createdAt).diff(dayjs(a.createdAt))
+    );
+  }, [allOrders]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -110,8 +117,11 @@ function Dashboard() {
       </div>
 
       <div className="space-y-6">
-        <PendingOrderTable orders={allOrders} orderLoading={isOrderLoading} />
-        <Analytics orders={allOrders} />
+        <PendingOrderTable
+          orders={sortedOrders}
+          orderLoading={isOrderLoading}
+        />
+        <Analytics orders={sortedOrders} />
       </div>
     </div>
   );
