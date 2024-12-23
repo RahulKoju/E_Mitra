@@ -9,13 +9,40 @@ import {
 import Image from "next/image";
 import ProductItemDetail from "./ProductItemDetail";
 import Link from "next/link";
-import { Product } from "@/lib/type";
+import { CartData, Product } from "@/lib/type";
+import { toast } from "sonner";
+import { useAddToCart } from "../_utils/tanstackQuery";
+import { useUpdateCart } from "../_context/UpdateCartContext";
 
 type ProductItemProps = {
   products: Product[];
 };
 
 function ProductItem({ products }: ProductItemProps) {
+  const { incrementCart } = useUpdateCart();
+  const { mutate: addToCartMutation, isPending } = useAddToCart();
+
+  const onAddToCart = (data: CartData, jwt: string) => {
+    addToCartMutation(
+      { data, jwt },
+      {
+        onSuccess: () => {
+          toast.success(`Added to cart sucessfuly`);
+          incrementCart();
+        },
+        onError: (error: unknown) => {
+          if (error instanceof Error) {
+            toast.error(error.message || "Failed to add item to cart");
+          } else if (typeof error === "string") {
+            toast.error(error);
+          } else {
+            toast.error("Failed to add item to cart");
+          }
+        },
+      }
+    );
+  };
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-3">
       {products.map((product) => (
@@ -70,7 +97,11 @@ function ProductItem({ products }: ProductItemProps) {
                       {/* Description */}
                     </DialogDescription>
                     <div className="text-sm text-zinc-500 dark:text-zinc-400">
-                      <ProductItemDetail product={product} />
+                      <ProductItemDetail
+                        product={product}
+                        isPending={isPending}
+                        onAddToCart={onAddToCart}
+                      />
                     </div>
                   </DialogHeader>
                 </DialogContent>

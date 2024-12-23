@@ -1,5 +1,5 @@
 "use client";
-import { Product } from "@/lib/type";
+import { CartData, Product } from "@/lib/type";
 import { LoaderCircleIcon, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,20 +7,23 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../_context/AuthContext";
-import { useUpdateCart } from "../_context/UpdateCartContext";
-import { useAddToCart } from "../_utils/tanstackQuery";
 
 type ProductItemProps = {
   product: Product;
+  isPending: boolean;
+  onAddToCart: (data: CartData, jwt: string) => void;
 };
 
-function ProductItemDetail({ product }: ProductItemProps) {
+function ProductItemDetail({
+  product,
+  isPending,
+  onAddToCart,
+}: ProductItemProps) {
   const [quantity, setQuantity] = useState(1);
-  const { incrementCart } = useUpdateCart();
   const totalPrice = quantity * product.price;
   const { jwt, user } = useAuth();
   const router = useRouter();
-  const { mutate: addToCartMutation, isPending } = useAddToCart();
+  //const { mutate: addToCartMutation, isPending } = useAddToCart();
 
   const handleIncrement = () => {
     setQuantity((prev) => Math.min(prev + 1, 20));
@@ -32,6 +35,7 @@ function ProductItemDetail({ product }: ProductItemProps) {
 
   const addToCart = async () => {
     if (!jwt || !user) {
+      toast.error("You must be signed in to add items to the cart.");
       router.push("/sign-in");
       return;
     }
@@ -44,24 +48,27 @@ function ProductItemDetail({ product }: ProductItemProps) {
         userId: user.id,
       },
     };
-    addToCartMutation(
-      { data, jwt },
-      {
-        onSuccess: () => {
-          toast.success("Added to cart successfully");
-          incrementCart();
-        },
-        onError: (error: unknown) => {
-          if (error instanceof Error) {
-            toast.error(error.message || "Failed to add item to cart");
-          } else if (typeof error === "string") {
-            toast.error(error);
-          } else {
-            toast.error("Failed to add item to cart");
-          }
-        },
-      }
-    );
+    onAddToCart(data, jwt);
+    setQuantity(1);
+    // addToCartMutation(
+    //   { data, jwt },
+    //   {
+    //     onSuccess: () => {
+    //       toast.success(`Added ${quantity} ${product.name} to cart`);
+    //       incrementCart();
+    //       setQuantity(1);
+    //     },
+    //     onError: (error: unknown) => {
+    //       if (error instanceof Error) {
+    //         toast.error(error.message || "Failed to add item to cart");
+    //       } else if (typeof error === "string") {
+    //         toast.error(error);
+    //       } else {
+    //         toast.error("Failed to add item to cart");
+    //       }
+    //     },
+    //   }
+    // );
   };
 
   return (
