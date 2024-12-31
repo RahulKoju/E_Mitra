@@ -48,6 +48,19 @@ function MyOrder() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "text-yellow-600";
+      case "completed":
+        return "text-green-600";
+      case "cancelled":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
   useEffect(() => {
     checkAuthentication();
   }, [router]);
@@ -79,7 +92,7 @@ function MyOrder() {
                           <span className="font-semibold mr-2">
                             Order Date:
                           </span>
-                          {dayjs(order.createdAt).format("YY-MMM-DD h:mm A")}
+                          {dayjs(order.createdAt).format("DD-MMM-YY h:mm A")}
                         </div>
                         <div>
                           <span className="font-semibold mr-2">
@@ -91,7 +104,11 @@ function MyOrder() {
                         </div>
                         <div>
                           <span className="font-semibold mr-2">Status:</span>
-                          <span className="text-yellow-600 font-medium">
+                          <span
+                            className={`font-medium ${getStatusColor(
+                              order.orderStatus
+                            )}`}
+                          >
                             {order.orderStatus}
                           </span>
                         </div>
