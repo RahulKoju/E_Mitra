@@ -37,13 +37,15 @@ export const billingSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   description: z
     .string()
-    .min(10, { message: "Description must be at least 10 characters" }),
+    .min(10, { message: "Description must be at least 10 characters" })
+    .max(200,{message: "Description must be at most 200 characters"}),
   price: z.coerce
     .number()
     .min(0, { message: "Price must be a positive number" }),
   slug: z
     .string()
     .min(2, { message: "Slug must be at least 2 characters" })
+    .max(20,{message: "Slug must be at most 20 characters"})
     .regex(/^[a-z0-9-]+$/, {
       message: "Slug must be lowercase, numbers, or hyphens",
     }),
