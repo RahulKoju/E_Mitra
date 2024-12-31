@@ -96,6 +96,7 @@ export type Product = {
   price: number;
   images: ProductImage[];
   categories: Category[];
+  updatedAt:string;
 };
 
 export type ProductPayload = {

@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Product } from "@/lib/type";
+import dayjs from "dayjs";
 import { EditIcon, TrashIcon } from "lucide-react";
 
 type ProductTableProp = {
@@ -32,6 +33,10 @@ function ProductTable({
   handleDeleteProduct,
   handleEditProduct,
 }: ProductTableProp) {
+  const sortedProducts = [...products].sort((a, b) =>
+    dayjs(b.updatedAt).diff(dayjs(a.updatedAt))
+  );
+
   return (
     <div>
       <Table className="w-full border-spacing-0 border-collapse">
@@ -56,7 +61,7 @@ function ProductTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.map((product) => (
+          {sortedProducts.map((product) => (
             <TableRow key={product.id} className="hover:bg-gray-50">
               <TableCell className="font-medium">{product.name}</TableCell>
               <TableCell className="hidden sm:table-cell">

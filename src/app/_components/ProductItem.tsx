@@ -13,12 +13,16 @@ import { CartData, Product } from "@/lib/type";
 import { toast } from "sonner";
 import { useAddToCart } from "../_utils/tanstackQuery";
 import { useUpdateCart } from "../_context/UpdateCartContext";
+import dayjs from "dayjs";
 
 type ProductItemProps = {
   products: Product[];
 };
 
 function ProductItem({ products }: ProductItemProps) {
+  const sortedProducts = [...products].sort((a, b) =>
+    dayjs(b.updatedAt).diff(dayjs(a.updatedAt))
+  );
   const { incrementCart } = useUpdateCart();
   const { mutate: addToCartMutation, isPending } = useAddToCart();
 
@@ -45,7 +49,7 @@ function ProductItem({ products }: ProductItemProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-3">
-      {products.map((product) => (
+      {sortedProducts.map((product) => (
         <div
           key={product.id}
           className="group bg-white rounded-xl shadow-sm hover:shadow-xl 
