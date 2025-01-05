@@ -1,81 +1,64 @@
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Menu } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-function NavMenu() {
+const NavMenu = () => {
+  const pathname = usePathname();
+
+  const isCurrentPath = (path: string) => pathname === path;
+
+  const navLinks = [
+    { href: "/product", label: "Products" },
+    { href: "/about", label: "About" },
+    { href: "/contact", label: "Contact" },
+  ];
+
   return (
     <div>
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex space-x-6 text-gray-700 font-semibold">
-        <Link
-          href="/product"
-          className="hover:text-green-600 transition-colors font-medium"
-        >
-          Products
-        </Link>
-        <Link
-          href="/about"
-          className="hover:text-green-600 transition-colors font-medium"
-        >
-          About
-        </Link>
-        <Link
-          href="/contact"
-          className="hover:text-green-600 transition-colors font-medium"
-        >
-          Contact
-        </Link>
+      <nav className="hidden lg:flex space-x-8">
+        {navLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={`relative py-2 text-base font-medium transition-colors ${
+              isCurrentPath(link.href)
+                ? "text-green-600"
+                : "text-gray-700 hover:text-green-600"
+            }`}
+          >
+            {link.label}
+            {isCurrentPath(link.href) && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-green-600 rounded-full" />
+            )}
+          </Link>
+        ))}
       </nav>
 
       {/* Mobile Navigation */}
-      <div className="md:hidden mt-3">
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <button
-              className="text-gray-700 hover:text-green-600 transition-colors focus:outline-none"
-              aria-label="Toggle Menu"
+      <nav className="lg:hidden">
+        <div className="py-4">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`block px-4 py-3 mb-2 rounded-lg transition-all ${
+                isCurrentPath(link.href)
+                  ? "bg-green-50 text-green-600 font-medium"
+                  : "text-gray-700 hover:bg-gray-50"
+              }`}
             >
-              <Menu size={24} />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-48 bg-white shadow-md rounded-md"
-            align="start"
-          >
-            <DropdownMenuItem asChild>
-              <Link
-                href="/product"
-                className="hover:text-green-600 transition-colors font-medium"
-              >
-                Products
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link
-                href="/about"
-                className="hover:text-green-600 transition-colors font-medium"
-              >
-                About
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link
-                href="/contact"
-                className="hover:text-green-600 transition-colors font-medium"
-              >
-                Contact
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              <div className="flex items-center">
+                <span className="text-lg">{link.label}</span>
+                {isCurrentPath(link.href) && (
+                  <span className="ml-2 w-1.5 h-1.5 bg-green-600 rounded-full" />
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </nav>
     </div>
   );
-}
+};
 
 export default NavMenu;

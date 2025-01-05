@@ -19,7 +19,6 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUpdateCart } from "../_context/UpdateCartContext";
-
 import {
   Sheet,
   SheetClose,
@@ -78,7 +77,6 @@ function Header() {
     setSubTotal(total);
   }, [cartItem]);
 
-  // Close mobile menu on route change
   useEffect(() => {
     const handleRouteChange = () => {
       setIsMobileMenuOpen(false);
@@ -90,9 +88,7 @@ function Header() {
   return (
     <div className="sticky top-0 z-50 bg-white shadow-md">
       <div className="max-w-screen-2xl mx-auto px-4 py-4">
-        {/* Desktop Header */}
         <div className="flex items-center justify-between">
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -104,7 +100,6 @@ function Header() {
             )}
           </button>
 
-          {/* Logo */}
           <Link
             href="/"
             className="text-xl md:text-2xl font-bold text-gray-800 hover:text-green-600 transition-colors"
@@ -112,14 +107,14 @@ function Header() {
             MITRA KHAJA GHAR
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center flex-1 gap-5 mx-5 justify-center">
+            <div className="w-full max-w-md">
+              <Search />
+            </div>
             <Category />
-            <Search />
             <NavMenu />
           </div>
 
-          {/* Cart and User Section */}
           <div className="flex gap-4 items-center">
             <Sheet>
               <SheetTrigger className="relative group">
@@ -233,35 +228,40 @@ function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         <div
           className={`
-            lg:hidden fixed inset-0 bg-white z-50 transition-transform duration-300 ease-in-out
-            ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}
-          `}
+    lg:hidden fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out
+    ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}
+  `}
         >
-          <div className="flex flex-col h-full">
-            <div className="p-4">
+          <div className="flex flex-col h-full bg-white">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <Link href="/" className="text-2xl font-bold text-gray-800">
+                MITRA KHAJA GHAR
+              </Link>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors ml-auto block"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <X className="h-6 w-6 text-gray-600" />
               </button>
             </div>
 
-            <div className="px-4 py-2">
+            <div className="p-4 border-b border-gray-100">
               <Search />
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-              <Category />
-              <div className="mt-4">
-                <NavMenu />
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4">
+                <Category />
+                <div className="mt-6">
+                  <h2 className="text-xl font-bold text-gray-800">Pages</h2>
+                  <NavMenu />
+                </div>
               </div>
             </div>
 
-            <div className="border-t border-gray-200 p-4">
+            <div className="border-t border-gray-100 p-4">
               {!isLoggedIn ? (
                 <Link href="/sign-in">
                   <Button className="w-full bg-green-600 hover:bg-green-700 text-white transition-colors">
@@ -279,11 +279,11 @@ function Header() {
                       <p className="text-sm text-gray-500">{user?.email}</p>
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div>
                     {user?.admin && (
                       <Link href="/dashboard">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           className="w-full justify-start"
                         >
                           <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -292,16 +292,13 @@ function Header() {
                       </Link>
                     )}
                     <Link href="/my-order">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                      >
+                      <Button variant="ghost" className="w-full justify-start">
                         <ShoppingBag className="mr-2 h-4 w-4" />
                         My Orders
                       </Button>
                     </Link>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                       onClick={signOut}
                     >
