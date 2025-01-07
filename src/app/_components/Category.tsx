@@ -1,6 +1,7 @@
 import { useCategories } from "../_utils/tanstackQuery";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,10 @@ import { cn } from "@/lib/utils";
 
 function Category() {
   const { data: categories, isLoading, error } = useCategories();
+  const pathname = usePathname();
   const validCategories = categories || [];
+
+  const isCurrentCategory = (slug: string) => pathname === `/category/${slug}`;
 
   return (
     <div>
@@ -49,23 +53,34 @@ function Category() {
                 No categories available
               </DropdownMenuItem>
             ) : (
-              validCategories.map((category) => (
-                <Link
-                  href={`/category/${category.slug}`}
-                  key={category.id}
-                  className="block"
-                >
-                  <DropdownMenuItem
-                    className={cn(
-                      "rounded-md transition-all duration-200",
-                      "hover:bg-green-50 hover:text-green-600 focus:bg-green-50 focus:text-green-600",
-                      "cursor-pointer py-2.5 px-3 my-1 font-medium text-gray-600"
-                    )}
+              validCategories.map((category) => {
+                const isActive = isCurrentCategory(category.slug);
+                return (
+                  <Link
+                    href={`/category/${category.slug}`}
+                    key={category.id}
+                    className="block relative"
                   >
-                    {category.name}
-                  </DropdownMenuItem>
-                </Link>
-              ))
+                    <DropdownMenuItem
+                      className={cn(
+                        "rounded-md transition-all duration-200",
+                        "hover:bg-green-50 hover:text-green-600 focus:bg-green-50 focus:text-green-600",
+                        "cursor-pointer py-2.5 px-3 my-1 font-medium",
+                        isActive
+                          ? "text-green-600 bg-green-50"
+                          : "text-gray-600"
+                      )}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        {category.name}
+                        {isActive && (
+                          <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                  </Link>
+                );
+              })
             )}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -84,15 +99,28 @@ function Category() {
           ) : validCategories.length === 0 ? (
             <p className="text-gray-500">No categories available</p>
           ) : (
-            validCategories.map((category) => (
-              <Link
-                href={`/category/${category.slug}`}
-                key={category.id}
-                className="block px-4 text-lg font-medium text-gray-700 hover:text-green-600 transition-colors"
-              >
-                {category.name}
-              </Link>
-            ))
+            validCategories.map((category) => {
+              const isActive = isCurrentCategory(category.slug);
+              return (
+                <Link
+                  href={`/category/${category.slug}`}
+                  key={category.id}
+                  className={cn(
+                    "block px-4 py-3 rounded-lg transition-all",
+                    isActive
+                      ? "bg-green-50 text-green-600 font-medium"
+                      : "text-gray-700 hover:bg-gray-50"
+                  )}
+                >
+                  <div className="flex items-center">
+                    <span className="text-lg">{category.name}</span>
+                    {isActive && (
+                      <span className="ml-2 w-1.5 h-1.5 bg-green-600 rounded-full" />
+                    )}
+                  </div>
+                </Link>
+              );
+            })
           )}
         </div>
       </div>

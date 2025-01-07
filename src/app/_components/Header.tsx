@@ -77,6 +77,10 @@ function Header() {
     setSubTotal(total);
   }, [cartItem]);
 
+  // Automatically closes the mobile menu whenever the user navigates to a different route
+  // (e.g., using the browser's back/forward buttons or programmatic navigation).
+  // This ensures the menu does not stay open unintentionally across route changes.
+  // The event listener is properly cleaned up when the component unmounts to prevent memory leaks.
   useEffect(() => {
     const handleRouteChange = () => {
       setIsMobileMenuOpen(false);
@@ -231,7 +235,7 @@ function Header() {
         <div
           className={`
     lg:hidden fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out
-    ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}
+    ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
   `}
         >
           <div className="flex flex-col h-full bg-white">
