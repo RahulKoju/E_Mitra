@@ -137,6 +137,7 @@ export const useCreateOrder = () => {
     onSuccess: (_, variables) => {
       // Invalidate orders and cart queries
       queryClient.invalidateQueries({ queryKey: ["myOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["allOrders"] });
       queryClient.invalidateQueries({ queryKey: ["cartItems"] });
     },
   });
