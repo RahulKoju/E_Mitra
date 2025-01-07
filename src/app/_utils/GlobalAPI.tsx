@@ -185,6 +185,20 @@ const uploadImage = async (file: File[], jwt: string | null) => {
   }
 };
 
+const fetchSearchProducts = async (searchQuery: string): Promise<Product[]> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/products?filters[$or][0][name][$containsi]=${searchQuery}&filters[$or][1][description][$containsi]=${searchQuery}&populate=images`
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || "Failed to fetch results");
+  }
+
+  const data = await response.json();
+  return data.data;
+};
+
 export default {
   getCategory,
   getCategoryList,
@@ -203,4 +217,5 @@ export default {
   createProduct,
   updateProduct,
   uploadImage,
+  fetchSearchProducts,
 };

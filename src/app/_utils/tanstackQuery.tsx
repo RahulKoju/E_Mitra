@@ -11,6 +11,7 @@ import {
 } from "@/lib/type";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import GlobalAPI from "./GlobalAPI";
+import { useEffect, useState } from "react";
 
 export const useCategories = () => {
   return useQuery<Category[]>({
@@ -38,6 +39,23 @@ export const useProductsByCategory = (category: string) => {
     queryKey: ["products", category],
     queryFn: () => GlobalAPI.getProductsByCategory(category),
     enabled: !!category,
+  });
+};
+
+export const useSearchProducts = (searchQuery: string, debounceMs = 800) => {
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, debounceMs);
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery, debounceMs]);
+  return useQuery<Product[]>({
+    queryKey: ["searchProducts", debouncedSearchQuery],
+    queryFn: () => GlobalAPI.fetchSearchProducts(debouncedSearchQuery),
+    enabled: !!debouncedSearchQuery.trim(),
   });
 };
 

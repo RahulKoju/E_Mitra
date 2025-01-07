@@ -1,84 +1,24 @@
 import { SearchIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Product } from "@/lib/type";
-
-type SearchProduct = {
-  data: Product[];
-};
+import { useSearchProducts } from "../_utils/tanstackQuery";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
-  const [results, setResults] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery.trim()) {
-        performSearch(searchQuery);
-      } else {
-        setResults([]);
-      }
-    }, 800);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  const performSearch = async (query: string) => {
-    setIsLoading(true);
-    setError("");
-
-    try {
-      // Updated Strapi v5 filter syntax
-      // const filters = {
-      //   $or: [
-      //     { name: { $containsi: query } },
-      //     { description: { $containsi: query } },
-      //   ],
-      // };
-      // Fixed populate syntax for Strapi v5
-      // const populate = {
-      //   populate: {
-      //     category: {
-      //       fields: ["name", "slug"],
-      //     },
-      //     images: {
-      //       fields: ["url", "alternativeText"],
-      //     },
-      //   },
-      // };
-      // const searchParams = new URLSearchParams({
-      //   filters: JSON.stringify(filters),
-      //   //populate: JSON.stringify(populate),
-      // });
-      // const response = await fetch(
-      //   `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/products?${searchParams}`
-      // );
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/products?filters[$or][0][name][$containsi]=${query}&filters[$or][1][description][$containsi]=${query}&populate=images`
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Failed to fetch results");
-      }
-
-      const data: SearchProduct = await response.json();
-      setResults(data.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch results");
-      setResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    data: results = [],
+    isLoading,
+    isError,
+    error,
+  } = useSearchProducts(searchQuery);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,15 +29,33 @@ const Search = () => {
 
   const clearSearch = () => {
     setSearchQuery("");
-    setResults([]);
   };
 
   const handleResultClick = (productId: number) => {
     router.push(`/products/${productId}`);
   };
 
+  // Handle clicks outside of the search container
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchFocused(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const shouldShowResults = isSearchFocused && searchQuery.trim().length > 0;
+
   return (
-    <div className="w-full relative">
+    <div className="w-full relative" ref={searchContainerRef}>
       <form onSubmit={handleSearch} className="w-full">
         <div className="relative">
           <input
@@ -106,9 +64,6 @@ const Search = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => {
-              setTimeout(() => setIsSearchFocused(false), 200);
-            }}
             placeholder="Search products by name, category..."
             className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-gray-300
               bg-white focus:outline-none focus:border-green-500 focus:ring-2 
@@ -136,8 +91,8 @@ const Search = () => {
         </div>
       </form>
 
-      {isSearchFocused && searchQuery && (
-        <Card className="absolute w-full mt-2 z-50 max-h-96 overflow-y-auto">
+      {shouldShowResults && (
+        <Card className="absolute w-full mt-2 z-50 max-h-96 overflow-y-auto shadow-lg transition-opacity duration-200">
           <CardContent className="p-2">
             {isLoading && (
               <div className="space-y-2">
@@ -153,14 +108,18 @@ const Search = () => {
               </div>
             )}
 
-            {error && (
+            {isError && (
               <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>
+                  {error instanceof Error
+                    ? error.message
+                    : "Failed to fetch results"}
+                </AlertDescription>
               </Alert>
             )}
 
-            {!isLoading && !error && results.length === 0 && searchQuery && (
+            {!isLoading && !error && results.length === 0 && (
               <div className="p-4 text-center text-gray-500">
                 No products found matching "{searchQuery}"
               </div>
@@ -171,7 +130,7 @@ const Search = () => {
               results.map((product) => (
                 <div
                   key={product.id}
-                  className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                  className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200"
                   onClick={() => handleResultClick(product.id)}
                 >
                   <div className="flex items-center space-x-4">
