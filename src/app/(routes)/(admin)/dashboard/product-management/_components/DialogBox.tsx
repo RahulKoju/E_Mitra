@@ -25,7 +25,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ImagePlusIcon, Loader2Icon } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import MultiSelect from "./MultiSelect";
 
@@ -82,11 +82,33 @@ function DialogBox({
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<ProductFormInputs>({
     resolver: zodResolver(productSchema),
     defaultValues,
   });
+
+  // Watch the product name field
+  const productName = useWatch({
+    control,
+    name: "name",
+    defaultValue: defaultValues.name,
+  });
+
+  // Auto-generate slug when product name changes
+  useEffect(() => {
+    if (productName) {
+      const generatedSlug = productName
+        .toLowerCase()
+        .replace(/\s+/g, "-") // Replace spaces with hyphens
+        .replace(/[^a-z0-9-]/g, ""); // Remove special characters
+      setValue("slug", generatedSlug);
+    } else {
+      // Clear the slug if the product name is empty
+      setValue("slug", "");
+    }
+  }, [productName, setValue]);
 
   useEffect(() => {
     reset(defaultValues);

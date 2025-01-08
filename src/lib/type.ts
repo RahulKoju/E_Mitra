@@ -38,7 +38,7 @@ export const billingSchema = z.object({
   description: z
     .string()
     .min(10, { message: "Description must be at least 10 characters" })
-    .max(200,{message: "Description must be at most 200 characters"}),
+    .max(300,{message: "Description must be at most 200 characters"}),
   price: z.coerce
     .number()
     .min(0, { message: "Price must be a positive number" }),
