@@ -186,25 +186,14 @@ const uploadImage = async (file: File[], jwt: string | null) => {
 };
 
 const fetchSearchProducts = async (searchQuery: string): Promise<Product[]> => {
-<<<<<<< Updated upstream
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/products?filters[$or][0][name][$containsi]=${searchQuery}&filters[$or][1][description][$containsi]=${searchQuery}&populate=images`
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || "Failed to fetch results");
-  }
-=======
   if (!searchQuery.trim()) {
-    return [];
+    return []; // Return empty array if search query is empty
   }
 
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/products?filters[$or][0][name][$containsi]=${searchQuery}&filters[$or][1][description][$containsi]=${searchQuery}&filters[$or][2][categories][name][$containsi]=${searchQuery}&populate[0]=images&populate[1]=categories`
     );
->>>>>>> Stashed changes
 
     if (!response.ok) {
       const errorData = await response.json();
