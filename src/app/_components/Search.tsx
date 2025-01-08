@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { SearchIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useRef } from "react";
@@ -18,12 +19,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+=======
+import React, { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useUpdateCart } from "../_context/UpdateCartContext";
+import { useAddToCart, useSearchProducts } from "../_utils/tanstackQuery";
+import SearchInput from "./SearchInput";
+import SearchResults from "./SearchResults";
+import { CartData } from "@/lib/type";
+>>>>>>> Stashed changes
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [dialogIsOpen, setDialogIsOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const {
@@ -41,7 +52,11 @@ const Search = () => {
       { data, jwt },
       {
         onSuccess: () => {
+<<<<<<< Updated upstream
           toast.success(`Added to cart sucessfuly`);
+=======
+          toast.success(`Added to cart successfully`);
+>>>>>>> Stashed changes
           incrementCart();
         },
         onError: (error: unknown) => {
@@ -61,6 +76,7 @@ const Search = () => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+<<<<<<< Updated upstream
     }
   };
 
@@ -77,55 +93,52 @@ const Search = () => {
         !dialogIsOpen
       ) {
         setIsSearchFocused(false);
+=======
+      setIsSearchFocused(false);
+      if (searchInputRef.current) {
+        searchInputRef.current.blur();
+>>>>>>> Stashed changes
       }
-    };
+    }
+  };
 
+  const clearSearch = () => {
+    setSearchQuery("");
+    setIsSearchFocused(false);
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      searchContainerRef.current &&
+      !searchContainerRef.current.contains(event.target as Node)
+    ) {
+      setIsSearchFocused(false);
+    }
+  };
+
+  useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [dialogIsOpen]);
+  }, []);
 
   const shouldShowResults = isSearchFocused && searchQuery.trim().length > 0;
 
   return (
     <div className="w-full relative" ref={searchContainerRef}>
-      <form onSubmit={handleSearch} className="w-full">
-        <div className="relative">
-          <input
-            id="search-input"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            placeholder="Search products by name, description..."
-            className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-gray-300
-              bg-white focus:outline-none focus:border-green-500 focus:ring-2 
-              focus:ring-green-500/20 transition-all duration-300
-              md:max-w-md md:py-1.5 md:pl-8 md:pr-8"
-          />
-
-          <SearchIcon
-            className={`absolute left-3 top-1/2 transform -translate-y-1/2
-              text-gray-400 h-4 w-4 transition-colors duration-300
-              ${isSearchFocused ? "text-green-500" : ""}
-              md:h-4 md:w-4`}
-          />
-
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 
-                text-gray-400 hover:text-gray-600 transition-colors duration-200"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      </form>
+      <SearchInput
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onSearchFocus={() => setIsSearchFocused(true)}
+        onClearSearch={clearSearch}
+        onSubmit={handleSearch}
+        isSearchFocused={isSearchFocused}
+        inputRef={searchInputRef}
+      />
 
       {shouldShowResults && (
+<<<<<<< Updated upstream
         <Card className="absolute w-full mt-2 z-50 max-h-96 overflow-y-auto shadow-lg transition-opacity duration-200">
           <CardContent className="p-2">
             {isLoading && (
@@ -216,6 +229,17 @@ const Search = () => {
               ))}
           </CardContent>
         </Card>
+=======
+        <SearchResults
+          results={results}
+          isLoading={isLoading}
+          isError={isError}
+          error={error}
+          searchQuery={searchQuery}
+          onAddToCart={onAddToCart}
+          isPending={isPending}
+        />
+>>>>>>> Stashed changes
       )}
     </div>
   );

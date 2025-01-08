@@ -51,7 +51,12 @@ export const useSearchProducts = (searchQuery: string, debounceMs = 800) => {
     }, debounceMs);
 
     return () => clearTimeout(timeout);
+<<<<<<< Updated upstream
   }, [searchQuery, debounceMs]);
+=======
+  }, [searchQuery]);
+
+>>>>>>> Stashed changes
   return useQuery<Product[]>({
     queryKey: ["searchProducts", debouncedSearchQuery],
     queryFn: () => GlobalAPI.fetchSearchProducts(debouncedSearchQuery),

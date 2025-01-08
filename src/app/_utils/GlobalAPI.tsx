@@ -186,6 +186,7 @@ const uploadImage = async (file: File[], jwt: string | null) => {
 };
 
 const fetchSearchProducts = async (searchQuery: string): Promise<Product[]> => {
+<<<<<<< Updated upstream
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/products?filters[$or][0][name][$containsi]=${searchQuery}&filters[$or][1][description][$containsi]=${searchQuery}&populate=images`
   );
@@ -194,9 +195,32 @@ const fetchSearchProducts = async (searchQuery: string): Promise<Product[]> => {
     const errorData = await response.json();
     throw new Error(errorData.error?.message || "Failed to fetch results");
   }
+=======
+  if (!searchQuery.trim()) {
+    return [];
+  }
 
-  const data = await response.json();
-  return data.data;
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/products?filters[$or][0][name][$containsi]=${searchQuery}&filters[$or][1][description][$containsi]=${searchQuery}&filters[$or][2][categories][name][$containsi]=${searchQuery}&populate[0]=images&populate[1]=categories`
+    );
+>>>>>>> Stashed changes
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData?.error?.message ||
+          errorData?.message ||
+          "Failed to fetch results"
+      );
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error("Error fetching search results:", error);
+    throw error;
+  }
 };
 
 export default {
