@@ -21,7 +21,7 @@ const SearchInput = ({
   inputRef,
 }: SearchInputProps) => {
   return (
-    <form onSubmit={onSubmit} className="w-full">
+    <form onSubmit={onSubmit} className="w-full" role="search">
       <div className="relative">
         <input
           id="search-input"
@@ -35,6 +35,7 @@ const SearchInput = ({
             focus:ring-green-500/20 transition-all duration-300"
           aria-label="Search products"
           ref={inputRef}
+          autoComplete="off"
         />
 
         <SearchIcon

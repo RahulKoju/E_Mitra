@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useUpdateCart } from "../_context/UpdateCartContext";
 import { useAddToCart, useSearchProducts } from "../_utils/tanstackQuery";
-import ProductItemDetail from "./ProductItemDetail";
 import SearchInput from "./SearchInput";
 import SearchResults from "./SearchResults";
 
@@ -15,7 +14,6 @@ const Search = () => {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const MemoizedProductItemDetail = React.memo(ProductItemDetail);
 
   const {
     data: results = [],
@@ -28,6 +26,11 @@ const Search = () => {
   const { mutate: addToCartMutation, isPending } = useAddToCart();
 
   const onAddToCart = (data: CartData, jwt: string) => {
+    if (!jwt) {
+      toast.error("You must be logged in to add items to the cart");
+      return;
+    }
+
     addToCartMutation(
       { data, jwt },
       {
@@ -52,13 +55,21 @@ const Search = () => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchFocused(false);
+
+      // Blur the search input to remove focus
+      if (searchInputRef.current) {
+        searchInputRef.current.blur();
+      }
     }
   };
 
   const clearSearch = () => {
     setSearchQuery("");
     setDialogIsOpen(false);
+    setIsSearchFocused(false);
   };
+
   // Handle clicks outside of the search container
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,28 +79,14 @@ const Search = () => {
         !dialogIsOpen
       ) {
         setIsSearchFocused(false);
-        if (searchInputRef.current) {
-          searchInputRef.current.blur();
-        }
       }
     };
-  });
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      searchContainerRef.current &&
-      !searchContainerRef.current.contains(event.target as Node)
-    ) {
-      setIsSearchFocused(false);
-    }
-  };
-
-  useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [dialogIsOpen]);
 
   const shouldShowResults = isSearchFocused && searchQuery.trim().length > 0;
 
@@ -114,6 +111,7 @@ const Search = () => {
           searchQuery={searchQuery}
           onAddToCart={onAddToCart}
           isPending={isPending}
+          setDialogIsOpen={setDialogIsOpen}
         />
       )}
     </div>

@@ -8,10 +8,11 @@ interface SearchResultsProps {
   results: Product[];
   isLoading: boolean;
   isError: boolean;
-  error: unknown;
+  error: Error | string | unknown;
   searchQuery: string;
   onAddToCart: (data: CartData, jwt: string) => void;
   isPending: boolean;
+  setDialogIsOpen: (isOpen: boolean) => void;
 }
 
 const SearchResults = ({
@@ -22,6 +23,7 @@ const SearchResults = ({
   searchQuery,
   onAddToCart,
   isPending,
+  setDialogIsOpen,
 }: SearchResultsProps) => {
   return (
     <Card className="absolute w-full mt-2 z-50 max-h-96 overflow-y-auto shadow-lg">
@@ -64,6 +66,7 @@ const SearchResults = ({
               product={product}
               onAddToCart={onAddToCart}
               isPending={isPending}
+              setDialogIsOpen={setDialogIsOpen}
             />
           ))}
       </CardContent>

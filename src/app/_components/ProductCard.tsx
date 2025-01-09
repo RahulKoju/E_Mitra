@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,22 +5,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import ProductItemDetail from "./ProductItemDetail";
-import Link from "next/link";
-import { CartData, Product } from "@/lib/type";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CartData, Product } from "@/lib/type";
+import Link from "next/link";
+import ProductItemDetail from "./ProductItemDetail";
 
 interface ProductCardProps {
   product: Product;
   onAddToCart: (data: CartData, jwt: string) => void;
   isPending: boolean;
+  setDialogIsOpen: (isOpen: boolean) => void;
 }
 
-const ProductCard = ({ product, onAddToCart, isPending }: ProductCardProps) => {
+const ProductCard = ({
+  product,
+  onAddToCart,
+  isPending,
+  setDialogIsOpen,
+}: ProductCardProps) => {
   return (
-    <Dialog>
+    <Dialog onOpenChange={setDialogIsOpen}>
       <DialogTrigger asChild>
-        <button className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200 w-full text-left">
+        <button
+          aria-label={`View details for ${product.name}`}
+          className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200 w-full text-left"
+        >
           <div className="flex items-center space-x-4">
             {product.images ? (
               <img
