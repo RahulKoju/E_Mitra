@@ -21,7 +21,7 @@ type ProductItemProps = {
 
 function ProductItem({ products }: ProductItemProps) {
   const sortedProducts = [...products].sort((a, b) =>
-    dayjs(b.updatedAt).diff(dayjs(a.updatedAt))
+    dayjs(b.createdAt).diff(dayjs(a.createdAt))
   );
   const { incrementCart } = useUpdateCart();
   const { mutate: addToCartMutation, isPending } = useAddToCart();

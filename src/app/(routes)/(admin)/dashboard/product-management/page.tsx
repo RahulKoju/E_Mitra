@@ -10,7 +10,8 @@ import { LoaderCircleIcon, PlusIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import DialogBox from "./_components/DialogBox";
-import ProductTable from "./_components/ProductTable";
+import { columns } from "./_components/product-columns";
+import { DataTable } from "./_components/DataTable";
 
 function ProductManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -104,10 +105,11 @@ function ProductManagement() {
           </div>
         ) : (
           <div className="overflow-x-auto px-6 py-4">
-            <ProductTable
-              products={products}
-              handleDeleteProduct={handleDeleteProduct}
-              handleEditProduct={handleEditProductInitiate}
+            <DataTable
+              columns={columns}
+              data={products}
+              onDelete={handleDeleteProduct}
+              onEdit={handleEditProductInitiate}
             />
           </div>
         )}

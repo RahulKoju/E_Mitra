@@ -38,7 +38,7 @@ export const billingSchema = z.object({
   description: z
     .string()
     .min(10, { message: "Description must be at least 10 characters" })
-    .max(300,{message: "Description must be at most 300 characters"}),
+    .max(500,{message: "Description must be at most 300 characters"}),
   price: z.coerce
     .number()
     .min(0, { message: "Price must be a positive number" }),
@@ -97,6 +97,7 @@ export type Product = {
   images: ProductImage[];
   categories: Category[];
   updatedAt:string;
+  createdAt:string;
 };
 
 export type ProductPayload = {
