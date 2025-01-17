@@ -8,9 +8,21 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Row } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, EditIcon, TrashIcon } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface DataTableRow {
+  name: string;
   documentId: string;
 }
 
@@ -40,11 +52,38 @@ export function DataTableRowActions<TData extends DataTableRow>({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem onClick={() => onEdit(product)}>
+          <EditIcon className="mr-2 h-4 w-4" /> {/* Add Edit Icon */}
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onDelete(product.documentId)}>
-          Delete
-        </DropdownMenuItem>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <DropdownMenuItem
+              onSelect={(e) => e.preventDefault()} // Prevent default dropdown behavior
+              className="text-red-600 focus:bg-red-50 focus:text-red-700"
+            >
+              <TrashIcon className="mr-2 h-4 w-4" /> {/* Add Delete Icon */}
+              Delete
+            </DropdownMenuItem>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete the product "{product.name}". This
+                action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => onDelete(product.documentId)}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DropdownMenuContent>
     </DropdownMenu>
   );

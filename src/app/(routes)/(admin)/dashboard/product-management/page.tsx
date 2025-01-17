@@ -106,10 +106,8 @@ function ProductManagement() {
         ) : (
           <div className="overflow-x-auto px-6 py-4">
             <DataTable
-              columns={columns}
+              columns={columns(handleDeleteProduct, handleEditProductInitiate)}
               data={products}
-              onDelete={handleDeleteProduct}
-              onEdit={handleEditProductInitiate}
             />
           </div>
         )}

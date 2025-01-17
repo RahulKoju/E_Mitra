@@ -3,10 +3,13 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Category, Product } from "@/lib/type";
 import { DataTableColumnHeader } from "./data-table-column-header";
-import { DataTableRowActions } from "./data-table-row-actions";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DataTableRowActions } from "./DataTableRowActions";
 
-export const columns: ColumnDef<Product>[] = [
+export const columns = (
+  onDelete: (id: string) => void,
+  onEdit: (product: Product) => void
+): ColumnDef<Product>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -89,6 +92,12 @@ export const columns: ColumnDef<Product>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row }) => (
+      <DataTableRowActions
+        row={row}
+        onDelete={(id) => onDelete(id)}
+        onEdit={(product) => onEdit(product)}
+      />
+    ),
   },
 ];

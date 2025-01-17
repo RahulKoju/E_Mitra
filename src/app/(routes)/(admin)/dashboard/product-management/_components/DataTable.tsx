@@ -37,8 +37,6 @@ declare module "@tanstack/table-core" {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  onDelete: (id: string) => void;
-  onEdit: (product: TData) => void;
 }
 
 const categoryFilter: FilterFn<any> = (
@@ -56,8 +54,6 @@ const categoryFilter: FilterFn<any> = (
 export function DataTable<TData, TValue>({
   columns,
   data,
-  onDelete,
-  onEdit,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
