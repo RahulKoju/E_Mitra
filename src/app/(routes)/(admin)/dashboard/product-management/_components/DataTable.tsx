@@ -14,6 +14,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  FilterFn,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -25,6 +26,13 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "./data-table-tool-bar";
 import { DataTablePagination } from "./data-table-pagination";
+import { Category } from "@/lib/type";
+
+declare module "@tanstack/table-core" {
+  interface FilterFns {
+    categoryFilter: FilterFn<unknown>;
+  }
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -32,6 +40,18 @@ interface DataTableProps<TData, TValue> {
   onDelete: (id: string) => void;
   onEdit: (product: TData) => void;
 }
+
+const categoryFilter: FilterFn<any> = (
+  row,
+  columnId,
+  filterValue: string[]
+) => {
+  const categories = row.getValue(columnId) as Category[];
+  if (!filterValue.length) return true;
+  return filterValue.some((filter) =>
+    categories.some((category) => category.name === filter)
+  );
+};
 
 export function DataTable<TData, TValue>({
   columns,
@@ -55,6 +75,9 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
+    },
+    filterFns: {
+      categoryFilter,
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,

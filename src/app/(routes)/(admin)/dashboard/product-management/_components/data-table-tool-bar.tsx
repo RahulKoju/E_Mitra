@@ -2,20 +2,26 @@
 
 import { Table } from "@tanstack/react-table";
 import { X } from "lucide-react";
-import { priorities, statuses } from "../data/data";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DataTableViewOptions } from "./data-table-view-options";
+import { useCategories } from "@/app/_utils/tanstackQuery";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
 }
-//filter logic remaining
+
 export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
+  const { data: categories } = useCategories();
+
+  const category = categories?.map((category) => ({
+    label: category.name,
+    value: category.name,
+  }));
 
   return (
     <div className="flex items-center justify-between">
@@ -28,18 +34,11 @@ export function DataTableToolbar<TData>({
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("price") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("price")}
-            title="price"
-            options={statuses}
-          />
-        )}
         {table.getColumn("categories") && (
           <DataTableFacetedFilter
             column={table.getColumn("categories")}
             title="categories"
-            options={priorities}
+            options={category || []}
           />
         )}
         {isFiltered && (

@@ -85,6 +85,7 @@ export const columns: ColumnDef<Product>[] = [
         </div>
       );
     },
+    filterFn: "categoryFilter",
   },
   {
     id: "actions",
