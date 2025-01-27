@@ -40,7 +40,7 @@ function SignIn() {
   }, [isLoggedIn, router]);
 
   return (
-    <div className="flex items-baseline justify-center my-20 px-4">
+    <div className="flex items-center justify-center min-h-screen">
       <div className="flex flex-col items-center justify-center p-6 sm:p-10 bg-slate-100 border border-gray-200 w-full max-w-md rounded-lg">
         <div className="text-3xl font-bold text-gray-800 pb-5">
           <Link href="/">MITRA KHAJA GHAR</Link>

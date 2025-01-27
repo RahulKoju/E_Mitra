@@ -1,14 +1,7 @@
-"use client";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Header from "./_components/Header";
-import Footer from "./_components/Footer";
-import { Toaster } from "@/components/ui/sonner";
-import { usePathname } from "next/navigation";
-import { UpdateCartProvider } from "./_context/UpdateCartContext";
-import { AuthProvider } from "./_context/AuthContext";
-import Providers from "./Providers";
+import LayoutClient from "./LayoutClient";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -21,33 +14,23 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-// export const metadata: Metadata = {
-//   title: "Ecommerce",
-//   description: "Managing sales product and customer relation in a website",
-// };
+export const metadata: Metadata = {
+  title: "Ecommerce",
+  description:
+    "Managing sales product order and customer relation in a website",
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const params = usePathname();
-  const show = params == "/sign-in" || params == "/sign-up" ? false : true;
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          <AuthProvider>
-            <UpdateCartProvider>
-              {show && <Header />}
-              {children}
-              <Toaster />
-              {show && <Footer />}
-            </UpdateCartProvider>
-          </AuthProvider>
-        </Providers>
+        <LayoutClient>{children}</LayoutClient>
       </body>
     </html>
   );
