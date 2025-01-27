@@ -20,9 +20,6 @@ type ProductItemProps = {
 };
 
 function ProductItem({ products }: ProductItemProps) {
-  const sortedProducts = [...products].sort((a, b) =>
-    dayjs(b.createdAt).diff(dayjs(a.createdAt))
-  );
   const { incrementCart } = useUpdateCart();
   const { mutate: addToCartMutation, isPending } = useAddToCart();
 
@@ -49,7 +46,7 @@ function ProductItem({ products }: ProductItemProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-3">
-      {sortedProducts.map((product) => (
+      {products.map((product) => (
         <div
           key={product.id}
           className="group bg-white rounded-xl shadow-sm hover:shadow-xl 
