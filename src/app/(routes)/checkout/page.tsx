@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import EsewaPayment from "./EsewaPayment";
 
 function Checkout() {
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +51,12 @@ function Checkout() {
     reset,
   } = useForm<BillingDetails>({
     resolver: zodResolver(billingSchema),
+    defaultValues: {
+      name: user?.username || "", // Pre-fill with user's username
+      email: user?.email || "", // Pre-fill with user's email
+      address: "bhaktapur", // You can add a default address if available
+      phoneNo: "9800000000", // You can add a default phone number if available
+    },
   });
 
   const checkAuthentication = () => {
@@ -98,6 +105,7 @@ function Checkout() {
           quantity: item.quantity,
           product: item.product,
         })),
+        orderStatus: "Pending",
       },
     };
     try {
@@ -137,7 +145,7 @@ function Checkout() {
         >
           {/* Billing Details Section */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl fo // Stop loadingnt-bold mb-6 flex items-center text-gray-800">
+            <h2 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
               <CreditCard className="mr-3 text-blue-600" size={28} />
               Billing Details
             </h2>
@@ -325,6 +333,11 @@ function Checkout() {
             </button>
           </div>
         </form>
+
+        {/* Add the eSewa Payment Button */}
+        <div className="md:col-span-2 mt-4">
+          <EsewaPayment totalAmount={total} cartItems={cartItems} />
+        </div>
       </div>
     </div>
   );

@@ -144,6 +144,7 @@ export type OrderPayload = {
     totalOrderAmount: number;
     userId: number;
     orderItemList: OrderItem[];
+    orderStatus:string;
   };
 };
 
