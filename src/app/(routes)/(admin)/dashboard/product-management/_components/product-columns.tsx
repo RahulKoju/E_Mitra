@@ -1,10 +1,10 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { Category, Product } from "@/lib/type";
-import { DataTableColumnHeader } from "./data-table-column-header";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableRowActions } from "./DataTableRowActions";
+import { Category, Product } from "@/lib/type";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableInlineActions } from "./DataTableInlineAction";
 
 export const columns = (
   onDelete: (id: string) => void,
@@ -92,8 +92,9 @@ export const columns = (
   },
   {
     id: "actions",
+    header: "Actions",
     cell: ({ row }) => (
-      <DataTableRowActions
+      <DataTableInlineActions
         row={row}
         onDelete={(id) => onDelete(id)}
         onEdit={(product) => onEdit(product)}
