@@ -8,10 +8,12 @@ import {
   OrderPayload,
   ProductPayload,
   SliderItem,
+  OrderStatus,
 } from "@/lib/type";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import GlobalAPI from "./GlobalAPI";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const useCategories = () => {
   return useQuery<Category[]>({
@@ -151,6 +153,31 @@ export const useMyOrders = (userId: number | null, jwt: string | null) => {
       return GlobalAPI.getMyOrders(userId, jwt);
     },
     enabled: !!userId && !!jwt,
+  });
+};
+
+export const useUpdateOrderStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      orderId,
+      status,
+      jwt,
+    }: {
+      orderId: string;
+      status: OrderStatus;
+      jwt: string;
+    }) => GlobalAPI.updateOrderStatus(orderId, status, jwt),
+    onSuccess: () => {
+      toast.success("Order status updated successfully");
+      // Invalidate and refetch orders
+      queryClient.invalidateQueries({ queryKey: ["myOrders"] });
+    },
+    onError: (error) => {
+      toast.error("Failed to update order status");
+      console.error("Error updating order status:", error);
+    },
   });
 };
 

@@ -2,9 +2,9 @@ import { OrderItemDetails } from "@/lib/type";
 import Image from "next/image";
 import React from "react";
 
-type MyOrderItemProps = {
+interface MyOrderItemProps {
   orderItem: OrderItemDetails;
-};
+}
 
 function MyOrderItem({ orderItem }: MyOrderItemProps) {
   return (

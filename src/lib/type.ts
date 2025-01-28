@@ -148,6 +148,8 @@ export type OrderPayload = {
   };
 };
 
+export type OrderStatus = 'pending' | 'completed' | 'cancelled';
+
 export type OrderItemDetails = {
   id: number;
   quantity: number;

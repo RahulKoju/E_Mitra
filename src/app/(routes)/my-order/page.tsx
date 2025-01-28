@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@/app/_context/AuthContext";
-import { useMyOrders } from "@/app/_utils/tanstackQuery";
+import { useMyOrders, useUpdateOrderStatus } from "@/app/_utils/tanstackQuery";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -13,19 +13,50 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import MyOrderItem from "./_component/MyOrderItem";
+import { OrderStatusManagement } from "./_component/OrderStatusManagement";
+import { MyOrder, OrderStatus } from "@/lib/type";
 
-function MyOrder() {
+function MyOrderPage() {
   const router = useRouter();
   const { user, jwt } = useAuth();
   const { data: myOrders = [], isLoading } = useMyOrders(
-    user?.id ? user.id : null,
+    user?.id ? Number(user.id) : null,
     jwt
   );
+
+  const { mutate: updateStatus } = useUpdateOrderStatus();
+
   const sortedOrders = useMemo(() => {
     return [...myOrders].sort((a, b) =>
       dayjs(b.createdAt).diff(dayjs(a.createdAt))
     );
   }, [myOrders]);
+
+  const handleStatusChange = async (
+    orderId: string,
+    newStatus: OrderStatus
+  ) => {
+    if (!jwt) return;
+
+    updateStatus({
+      orderId,
+      status: newStatus,
+      jwt,
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "text-yellow-600";
+      case "completed":
+        return "text-green-600";
+      case "cancelled":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
 
   const checkAuthentication = () => {
     const token = sessionStorage.getItem("token") || "";
@@ -48,17 +79,8 @@ function MyOrder() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-        return "text-yellow-600";
-      case "completed":
-        return "text-green-600";
-      case "cancelled":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
-    }
+  const capitalizeFirstLetter = (string: string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   };
 
   useEffect(() => {
@@ -82,7 +104,7 @@ function MyOrder() {
           </div>
         ) : sortedOrders.length > 0 ? (
           <div className="space-y-4">
-            {sortedOrders.map((order, index) => (
+            {sortedOrders.map((order: MyOrder) => (
               <Collapsible key={order.id}>
                 <CollapsibleTrigger asChild>
                   <div className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden">
@@ -102,15 +124,26 @@ function MyOrder() {
                             Rs. {order.totalOrderAmount.toFixed(2)}
                           </span>
                         </div>
-                        <div>
-                          <span className="font-semibold mr-2">Status:</span>
-                          <span
-                            className={`font-medium ${getStatusColor(
-                              order.orderStatus
-                            )}`}
-                          >
-                            {order.orderStatus}
-                          </span>
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <span className="font-semibold mr-2">Status:</span>
+                            <span
+                              className={`font-medium ${getStatusColor(
+                                order.orderStatus
+                              )}`}
+                            >
+                              {capitalizeFirstLetter(order.orderStatus)}
+                            </span>
+                          </div>
+                          {user?.admin && (
+                            <OrderStatusManagement
+                              currentStatus={order.orderStatus}
+                              orderId={order.id}
+                              onStatusChange={(newStatus) =>
+                                handleStatusChange(order.id, newStatus)
+                              }
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -144,4 +177,4 @@ function MyOrder() {
   );
 }
 
-export default MyOrder;
+export default MyOrderPage;

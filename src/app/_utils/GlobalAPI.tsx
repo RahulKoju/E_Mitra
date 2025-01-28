@@ -11,6 +11,7 @@ import {
   ProductPayload,
   CartItemResponse,
   MyOrderResponse,
+  OrderStatus,
 } from "@/lib/type";
 
 const axiosClient = axios.create({
@@ -131,6 +132,27 @@ const getMyOrders = (userId: number, jwt: string): Promise<MyOrder[]> =>
       return orderList;
     });
 
+const updateOrderStatus = (
+  orderId: string,
+  status: OrderStatus,
+  jwt: string
+): Promise<MyOrder> =>
+  axiosClient
+    .put<{ data: MyOrder }>(
+      `/orders/${orderId}`,
+      {
+        data: {
+          orderStatus: status,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    )
+    .then((res) => res.data.data);
+
 const getAllOrders = (jwt: string): Promise<Order[]> =>
   axiosClient
     .get<{ data: Order[] }>(
@@ -225,6 +247,7 @@ export default {
   deleteCartItem,
   createOrder,
   getMyOrders,
+  updateOrderStatus,
   getAllOrders,
   deleteProduct,
   createProduct,
